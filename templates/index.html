@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Ana Sayfa - Kuran Kursu{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4"><i class="bi bi-house-door"></i> Hoş Geldiniz</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Toplam Öğrenci</h5>
+                        <h2 class="mb-0">{{ toplam_ogrenci }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-people fs-1"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="/ogrenciler" class="text-white text-decoration-none">
+                    Detaylar <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Toplam Kurs</h5>
+                        <h2 class="mb-0">{{ toplam_kurs }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-journal-text fs-1"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="/kurslar" class="text-white text-decoration-none">
+                    Detaylar <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Aktif Kayıt</h5>
+                        <h2 class="mb-0">{{ aktif_kayit }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-card-checklist fs-1"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="/kayitlar" class="text-white text-decoration-none">
+                    Detaylar <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Hızlı İşlemler</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="/ogrenci/ekle" class="btn btn-primary w-100 btn-lg">
+                            <i class="bi bi-person-plus"></i> Yeni Öğrenci Ekle
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="/kurs/ekle" class="btn btn-success w-100 btn-lg">
+                            <i class="bi bi-plus-circle"></i> Yeni Kurs Ekle
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="/kayit/ekle" class="btn btn-info w-100 btn-lg">
+                            <i class="bi bi-clipboard-plus"></i> Yeni Kayıt Oluştur
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
