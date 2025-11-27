@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
-from app.config import config
+from config import config
 import os
 
 # Initialize extensions
@@ -19,37 +19,42 @@ def create_app(config_name=None):
     """Application factory pattern"""
     if config_name is None:
         config_name = os.environ.get('FLASK_ENV', 'development')
-    
+
     app = Flask(__name__)
     app.config.from_object(config[config_name])
-    
+
     # Initialize extensions with app
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
     mail.init_app(app)
     csrf.init_app(app)
-    
+
+    # Flask-Login user_loader fonksiyonu
+    @login_manager.user_loader
+    def load_user(user_id):
+        from app.models.user import User
+        return User.query.get(int(user_id))
+
     # Login manager settings
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Lütfen giriş yapınız.'
     login_manager.login_message_category = 'warning'
-    
+
     # Create upload folder if not exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    
+
     # Register blueprints
     from app.routes import auth, main
     app.register_blueprint(auth.bp)
     app.register_blueprint(main.bp)
-    
-    
+
     # Register error handlers
     register_error_handlers(app)
-    
+
     # Register template filters
     register_template_filters(app)
-    
+
     # Shell context for flask cli
     @app.shell_context_processor
     def make_shell_context():
@@ -62,7 +67,7 @@ def create_app(config_name=None):
             'Ders': Ders,
             'Kurs': Kurs
         }
-    
+
     return app
 
 

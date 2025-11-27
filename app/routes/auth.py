@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from app.forms import LoginForm
 from flask_login import login_user, logout_user, current_user
-from app import db
-from app.models.user import User
+## ...existing code...
 
 bp = Blueprint('auth', __name__)
 
@@ -13,6 +12,8 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
 
+    from app.models.user import User
+    from app import db
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -44,17 +45,17 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     
+    from app.models.user import User
+    from app import db
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
         adsoyad = request.form.get('adsoyad')
-        
         # Kullanıcı var mı kontrol et
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             flash('Bu e-posta adresi zaten kayıtlı!', 'danger')
             return redirect(url_for('auth.register'))
-        
         # Yeni kullanıcı oluştur
         user = User(
             email=email,
@@ -63,11 +64,8 @@ def register():
             aktif=False  # Admin onayı gerekiyor
         )
         user.set_password(password)
-        
         db.session.add(user)
         db.session.commit()
-        
         flash('Kayıt başarılı! Hesabınız yönetici onayı bekliyor.', 'success')
         return redirect(url_for('auth.login'))
-    
     return render_template('auth/register.html')
