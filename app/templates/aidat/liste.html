@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Aidat Listesi - E-Kuran Kursu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-money-bill-wave"></i> Aidat Listesi</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('aidat.ekle') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Borçlandır
+        </a>
+        <a href="#" class="btn btn-success ms-2">
+            <i class="fas fa-money-check-alt"></i> Ödeme Kaydı
+        </a>
+        <a href="#" class="btn btn-danger ms-2">
+            <i class="fas fa-trash"></i> Sil
+        </a>
+    </div>
+</div>
+
+<!-- Filtreler -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('aidat.liste') }}" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Öğrenci adı veya TC ile ara..."
+                    value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="odendi" class="form-select">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="1" {% if odendi=='1' %}selected{% endif %}>Ödendi</option>
+                    <option value="0" {% if odendi=='0' %}selected{% endif %}>Ödenmedi</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Ara
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Aidat Tablosu -->
+<div class="card">
+    <div class="card-body">
+        {% if aidatlar %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Öğrenci</th>
+                        <th>TC</th>
+                        <th>Kurs</th>
+                        <th>Tutar</th>
+                        <th>Dönem</th>
+                        <th>Vade Tarihi</th>
+                        <th>Ödeme Durumu</th>
+                        <th>Ödeme Tarihi</th>
+                        <th>Bakiye</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aidat in aidatlar %}
+                    <tr>
+                        <td>{{ aidat.id }}</td>
+                        <td>{{ aidat.ogrenci.adsoyad if aidat.ogrenci else '-' }}</td>
+                        <td>{{ aidat.ogrenci.tc if aidat.ogrenci else '-' }}</td>
+                        <td>{{ aidat.kurs_id }}</td>
+                        <td>{{ aidat.tutar }} TL</td>
+                        <td>{{ aidat.donem or '-' }}</td>
+                        <td>{{ aidat.vade_tarihi.strftime('%d.%m.%Y') if aidat.vade_tarihi else '-' }}</td>
+                        <td>
+                            {% if aidat.odendi %}
+                            <span class="badge bg-success">Ödendi</span>
+                            {% else %}
+                            <span class="badge bg-danger">Ödenmedi</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ aidat.odeme_tarihi.strftime('%d.%m.%Y') if aidat.odeme_tarihi else '-' }}</td>
+                        <td>
+                            {% if aidat.ogrenci %}
+                            {{ aidat.ogrenci.get_aidat_borc() }} TL
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-info" title="Görüntüle">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-warning" title="Düzenle">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-danger" title="Sil">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Henüz aidat kaydı bulunmamaktadır.</p>
+            <a href="#" class="btn btn-primary">
+                <i class="fas fa-plus"></i> İlk Aidat Kaydını Ekle
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

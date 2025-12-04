@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Eğitmenler - E-Kuran Kursu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-chalkboard-teacher"></i> Eğitmenler</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('egitmenler.ekle') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Yeni Eğitmen Ekle
+        </a>
+    </div>
+</div>
+
+<!-- Filtreler (örnek, backend ile uyumlu hale getirilebilir) -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('egitmenler.liste') }}" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Ad, TC veya Branş ile ara...">
+            </div>
+            <div class="col-md-3">
+                <select name="durum" class="form-select">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="aktif">Aktif</option>
+                    <option value="pasif">Pasif</option>
+                    <option value="ayrıldı">Ayrıldı</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Ara
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Eğitmen Listesi -->
+<div class="card">
+    <div class="card-body">
+        {% if egitmenler %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ad Soyad</th>
+                        <th>TC</th>
+                        <th>Telefon</th>
+                        <th>E-posta</th>
+                        <th>Branş</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for egitmen in egitmenler %}
+                    <tr>
+                        <td>{{ egitmen.id }}</td>
+                        <td>{{ egitmen.adsoyad }}</td>
+                        <td>{{ egitmen.tc or '-' }}</td>
+                        <td>{{ egitmen.telefon or '-' }}</td>
+                        <td>{{ egitmen.email or '-' }}</td>
+                        <td>{{ egitmen.brans or '-' }}</td>
+                        <td>
+                            {% if egitmen.durum == 'aktif' %}
+                            <span class="badge bg-success">Aktif</span>
+                            {% elif egitmen.durum == 'pasif' %}
+                            <span class="badge bg-secondary">Pasif</span>
+                            {% elif egitmen.durum == 'ayrıldı' %}
+                            <span class="badge bg-danger">Ayrıldı</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ egitmen.durum }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <!-- Detay ve düzenle butonları eklenebilir -->
+                            <a href="#" class="btn btn-sm btn-info" title="Görüntüle">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-warning" title="Düzenle">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Henüz eğitmen bulunmamaktadır.</p>
+            <a href="{{ url_for('egitmenler.ekle') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> İlk Eğitmeni Ekle
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

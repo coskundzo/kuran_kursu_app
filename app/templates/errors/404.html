@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Sayfa Bulunamadı - E-Kuran Kursu{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="error-template">
+                <h1 class="display-1 text-primary">
+                    <i class="fas fa-exclamation-triangle"></i> 404
+                </h1>
+                <h2 class="mb-4">Sayfa Bulunamadı</h2>
+                <p class="lead mb-4">
+                    Üzgünüz, aradığınız sayfa bulunamadı. Sayfa kaldırılmış, adı değiştirilmiş
+                    veya geçici olarak kullanılamıyor olabilir.
+                </p>
+                <div class="error-actions">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg me-2">
+                        <i class="fas fa-home"></i> Ana Sayfaya Dön
+                    </a>
+                    <a href="javascript:history.back()" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-arrow-left"></i> Geri Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-template {
+        padding: 40px 15px;
+    }
+
+    .error-template h1 {
+        font-size: 8rem;
+        font-weight: bold;
+    }
+
+    .error-actions {
+        margin-top: 30px;
+    }
+</style>
+{% endblock %}

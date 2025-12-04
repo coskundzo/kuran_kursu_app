@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Öğrenci Ekle{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Öğrenci Ekle</h2>
+    <form method="POST">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="adsoyad" class="form-label">Ad Soyad</label>
+                    <input type="text" class="form-control" id="adsoyad" name="adsoyad" required
+                        value="{{ ogrenci.adsoyad if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="tc" class="form-label">TC Kimlik No</label>
+                    <input type="text" class="form-control" id="tc" name="tc"
+                        value="{{ ogrenci.tc if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="dogum_tarihi" class="form-label">Doğum Tarihi</label>
+                    <input type="date" class="form-control" id="dogum_tarihi" name="dogum_tarihi"
+                        value="{{ ogrenci.dogum_tarihi if ogrenci and ogrenci.dogum_tarihi else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="cinsiyet" class="form-label">Cinsiyet</label>
+                    <select class="form-select" id="cinsiyet" name="cinsiyet">
+                        <option value="">Seçiniz</option>
+                        <option value="E" {% if ogrenci and ogrenci.cinsiyet=='E' %}selected{% endif %}>Erkek</option>
+                        <option value="K" {% if ogrenci and ogrenci.cinsiyet=='K' %}selected{% endif %}>Kadın</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="telefon" class="form-label">Telefon</label>
+                    <input type="text" class="form-control" id="telefon" name="telefon"
+                        value="{{ ogrenci.telefon if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-posta</label>
+                    <input type="email" class="form-control" id="email" name="email"
+                        value="{{ ogrenci.email if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="adres" class="form-label">Adres</label>
+                    <input type="text" class="form-control" id="adres" name="adres"
+                        value="{{ ogrenci.adres if ogrenci else '' }}">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="veli_adi" class="form-label">Veli Adı</label>
+                    <input type="text" class="form-control" id="veli_adi" name="veli_adi"
+                        value="{{ ogrenci.veli_adi if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="veli_telefon" class="form-label">Veli Telefon</label>
+                    <input type="text" class="form-control" id="veli_telefon" name="veli_telefon"
+                        value="{{ ogrenci.veli_telefon if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="veli_email" class="form-label">Veli E-posta</label>
+                    <input type="email" class="form-control" id="veli_email" name="veli_email"
+                        value="{{ ogrenci.veli_email if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="sinif_id" class="form-label">Sınıf</label>
+                    <select class="form-select" id="sinif_id" name="sinif_id">
+                        <option value="">Seçiniz</option>
+                        {% for sinif in siniflar %}
+                        <option value="{{ sinif.id }}" {% if ogrenci and ogrenci.sinif_id==sinif.id %}selected{% endif
+                            %}>{{ sinif.ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="egitmen_id" class="form-label">Eğitmen</label>
+                    <select class="form-select" id="egitmen_id" name="egitmen_id">
+                        <option value="">Seçiniz</option>
+                        {% for egitmen in egitmenler %}
+                        <option value="{{ egitmen.id }}" {% if ogrenci and ogrenci.egitmen_id==egitmen.id %}selected{%
+                            endif %}>{{ egitmen.adsoyad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="sicil_no" class="form-label">Sicil No</label>
+                    <input type="text" class="form-control" id="sicil_no" name="sicil_no"
+                        value="{{ ogrenci.sicil_no if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="egitim_turu" class="form-label">Eğitim Türü</label>
+                    <input type="text" class="form-control" id="egitim_turu" name="egitim_turu"
+                        value="{{ ogrenci.egitim_turu if ogrenci else '' }}">
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success">Öğrenci Ekle</button>
+    </form>
+</div>
+{% endblock %}
