@@ -108,7 +108,7 @@ def ekle():
             db.session.commit()
             
             flash('Öğrenci başarıyla eklendi!', 'success')
-            return redirect(url_for('ogrenciler.detay', id=ogrenci.id))
+            return redirect(url_for('ogrenciler.liste'))
         
         except Exception as e:
             db.session.rollback()
