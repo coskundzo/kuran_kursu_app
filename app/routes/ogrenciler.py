@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from app import db
 from app.models.ogrenci import Ogrenci
 from app.models.egitmen import Egitmen
-from app.models.kurs import Sinif
+from app.models.kurs import Sinif, Kurs
 from datetime import datetime
 
 bp = Blueprint('ogrenciler', __name__, url_prefix='/ogrenciler')
@@ -77,7 +77,13 @@ def ekle():
     if request.method == 'POST':
         try:
             # Kurs ID'sini belirle
-            kurs_id = current_user.kaynak_id if current_user.tur == 3 else request.form.get('kurs_id', type=int)
+            if current_user.tur == 3:
+                kurs_id = current_user.kaynak_id
+            else:
+                kurs_id = request.form.get('kurs_id', type=int)
+                if not kurs_id:
+                    flash('Kurs seçimi zorunludur!', 'warning')
+                    return redirect(url_for('ogrenciler.ekle'))
             
             ogrenci = Ogrenci(
                 adsoyad=request.form.get('adsoyad'),
@@ -109,13 +115,20 @@ def ekle():
             flash(f'Hata oluştu: {str(e)}', 'danger')
     
     # Form için gerekli listeler
-    siniflar = Sinif.query.filter_by(kurs_id=current_user.kaynak_id).all() if current_user.tur == 3 else []
-    egitmenler = Egitmen.query.filter_by(kurs_id=current_user.kaynak_id).all() if current_user.tur == 3 else []
+    if current_user.tur == 3:  # Kurs kullanıcısı
+        siniflar = Sinif.query.filter_by(kurs_id=current_user.kaynak_id).all()
+        egitmenler = Egitmen.query.filter_by(kurs_id=current_user.kaynak_id).all()
+        kurslar = []
+    else:  # Admin veya diğer kullanıcılar
+        siniflar = Sinif.query.all()
+        egitmenler = Egitmen.query.all()
+        kurslar = Kurs.query.filter_by(aktif=True).all()
     
     return render_template('ogrenciler/form.html',
                          ogrenci=None,
                          siniflar=siniflar,
-                         egitmenler=egitmenler)
+                         egitmenler=egitmenler,
+                         kurslar=kurslar)
 
 
 @bp.route('/<int:id>')

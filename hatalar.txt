@@ -1,0 +1,3 @@
+Hatalar
+1. Eğitmen sayfasında eğitmen ekle deyince hata verdi.
+2. The CSRF token is missing. öğrenci ekle kısmında ekle deyince token hatası veriyor.

@@ -4,6 +4,7 @@
 <div class="container mt-4">
     <h2>Öğrenci Ekle</h2>
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="row">
             <div class="col-md-6">
                 <div class="mb-3">
@@ -46,6 +47,18 @@
                 </div>
             </div>
             <div class="col-md-6">
+                {% if current_user.tur != 3 %}
+                <div class="mb-3">
+                    <label for="kurs_id" class="form-label">Kurs *</label>
+                    <select class="form-select" id="kurs_id" name="kurs_id" required>
+                        <option value="">Seçiniz</option>
+                        {% for kurs in kurslar %}
+                        <option value="{{ kurs.id }}" {% if ogrenci and ogrenci.kurs_id==kurs.id %}selected{% endif %}>
+                            {{ kurs.adi }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
                 <div class="mb-3">
                     <label for="veli_adi" class="form-label">Veli Adı</label>
                     <input type="text" class="form-control" id="veli_adi" name="veli_adi"
@@ -67,7 +80,7 @@
                         <option value="">Seçiniz</option>
                         {% for sinif in siniflar %}
                         <option value="{{ sinif.id }}" {% if ogrenci and ogrenci.sinif_id==sinif.id %}selected{% endif
-                            %}>{{ sinif.ad }}</option>
+                            %}>{{ sinif.adi }}</option>
                         {% endfor %}
                     </select>
                 </div>
