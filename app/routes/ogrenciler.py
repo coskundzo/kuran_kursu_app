@@ -182,13 +182,20 @@ def duzenle(id):
             flash(f'Hata oluştu: {str(e)}', 'danger')
     
     # Form için gerekli listeler
-    siniflar = Sinif.query.filter_by(kurs_id=ogrenci.kurs_id).all()
-    egitmenler = Egitmen.query.filter_by(kurs_id=ogrenci.kurs_id).all()
+    if current_user.tur == 3:  # Kurs kullanıcısı
+        siniflar = Sinif.query.filter_by(kurs_id=current_user.kaynak_id).all()
+        egitmenler = Egitmen.query.filter_by(kurs_id=current_user.kaynak_id).all()
+        kurslar = []
+    else:  # Admin veya diğer kullanıcılar
+        siniflar = Sinif.query.all()
+        egitmenler = Egitmen.query.all()
+        kurslar = Kurs.query.filter_by(aktif=True).all()
     
     return render_template('ogrenciler/form.html',
                          ogrenci=ogrenci,
                          siniflar=siniflar,
-                         egitmenler=egitmenler)
+                         egitmenler=egitmenler,
+                         kurslar=kurslar)
 
 
 @bp.route('/<int:id>/sil', methods=['POST'])
