@@ -7,7 +7,7 @@
         <h2><i class="fas fa-book"></i> Dersler</h2>
     </div>
     <div class="col-md-6 text-end">
-        <a href="#" class="btn btn-primary">
+        <a href="{{ url_for('dersler.ekle') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Yeni Ders Ekle
         </a>
     </div>
@@ -73,10 +73,12 @@
                         <td>{{ ders.tur or '-' }}</td>
                         <td>{{ ders.konu or '-' }}</td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-info" title="Görüntüle">
+                            <a href="{{ url_for('dersler.detay', id=ders.id) }}" class="btn btn-sm btn-info"
+                                title="Görüntüle">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="#" class="btn btn-sm btn-warning" title="Düzenle">
+                            <a href="{{ url_for('dersler.duzenle', id=ders.id) }}" class="btn btn-sm btn-warning"
+                                title="Düzenle">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </td>
@@ -89,7 +91,7 @@
         <div class="text-center py-5">
             <i class="fas fa-book fa-3x text-muted mb-3"></i>
             <p class="text-muted">Henüz ders bulunmamaktadır.</p>
-            <a href="#" class="btn btn-primary">
+            <a href="{{ url_for('dersler.ekle') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> İlk Dersi Ekle
             </a>
         </div>

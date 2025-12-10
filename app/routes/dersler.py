@@ -63,3 +63,30 @@ def ekle():
         flash('Ders başarıyla eklendi!', 'success')
         return redirect(url_for('dersler.liste'))
     return render_template('dersler/form.html', form=form)
+
+@bp.route('/<int:id>')
+@login_required
+def detay(id):
+    """Ders detay sayfası"""
+    ders = Ders.query.get_or_404(id)
+    return render_template('dersler/detay.html', ders=ders)
+
+@bp.route('/<int:id>/duzenle', methods=['GET', 'POST'])
+@login_required
+def duzenle(id):
+    """Ders düzenle"""
+    ders = Ders.query.get_or_404(id)
+    from app.forms import DersForm
+    form = DersForm(obj=ders)
+    
+    if form.validate_on_submit():
+        ders.adi = form.adi.data
+        ders.tur = form.tur.data
+        ders.konu = form.konu.data
+        ders.aciklama = form.aciklama.data
+        
+        db.session.commit()
+        flash('Ders bilgileri güncellendi!', 'success')
+        return redirect(url_for('dersler.detay', id=ders.id))
+    
+    return render_template('dersler/form.html', form=form, ders=ders)
