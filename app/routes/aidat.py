@@ -1,4 +1,10 @@
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
+from flask_login import login_required, current_user
 from sqlalchemy import func
+from app import db
+from app.models.ders import AidatHareket
+from app.models.ogrenci import Ogrenci
+from datetime import datetime
 
 # 1. Toplu veya tekil aidat borçlandırma
 def borclandir(ogrenci_id, tutar, donem, aciklama, vade_tarihi):
@@ -73,14 +79,6 @@ def aidat_yetki_kontrol():
         return False
     return True
 
-
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
-from flask_login import login_required, current_user
-from app import db
-from app.models.ders import AidatHareket
-from app.models.ogrenci import Ogrenci
-from datetime import datetime
-
 bp = Blueprint('aidat', __name__, url_prefix='/aidat')
 
 
@@ -127,9 +125,19 @@ def ekle():
     from app.forms import AidatForm
     from app.models.ders import AidatHareket
     from app.models.ogrenci import Ogrenci
+    
     form = AidatForm()
+    
+    # Öğrenci listesini yükle
+    if current_user.tur == 3:  # Kurs kullanıcısı
+        ogrenciler = [(o.id, f"{o.sicil_no} - {o.adsoyad}") for o in Ogrenci.query.filter_by(kurs_id=current_user.kaynak_id).all()]
+    else:  # Admin
+        ogrenciler = [(o.id, f"{o.sicil_no} - {o.adsoyad}") for o in Ogrenci.query.all()]
+    
+    form.ogrenci_id.choices = ogrenciler
+    
     if form.validate_on_submit():
-        ogrenci = Ogrenci.query.get(int(form.ogrenci_id.data))
+        ogrenci = Ogrenci.query.get(form.ogrenci_id.data)
         if not ogrenci:
             flash('Öğrenci bulunamadı!', 'danger')
             return render_template('aidat/form.html', form=form)

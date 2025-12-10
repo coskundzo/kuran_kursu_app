@@ -6,13 +6,13 @@ from wtforms.validators import DataRequired, Email, Optional
 
 
 class AidatForm(FlaskForm):
-    ogrenci_id = StringField('Öğrenci ID', validators=[DataRequired()])
+    ogrenci_id = SelectField('Öğrenci', coerce=int, validators=[DataRequired()])
     tutar = StringField('Tutar', validators=[DataRequired()])
     donem = StringField('Dönem')
     vade_tarihi = StringField('Vade Tarihi')
     odendi = BooleanField('Ödendi')
     aciklama = StringField('Açıklama')
-    submit = BooleanField('Aidat Ekle')
+    submit = SubmitField('Aidat Ekle')
 
 
 class LoginForm(FlaskForm):

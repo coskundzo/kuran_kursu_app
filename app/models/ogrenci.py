@@ -63,6 +63,7 @@ class Ogrenci(db.Model):
     def get_aidat_borc(self):
         """Öğrencinin aidat borcunu hesapla"""
         from sqlalchemy import func
+        from app.models.ders import AidatHareket
         borc = db.session.query(
             func.sum(AidatHareket.tutar)
         ).filter(

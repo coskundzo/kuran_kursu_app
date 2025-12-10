@@ -6,8 +6,8 @@
     <form method="POST">
         {{ form.csrf_token }}
         <div class="mb-3">
-            {{ form.ogrenci_id.label }}
-            {{ form.ogrenci_id(class="form-control") }}
+            {{ form.ogrenci_id.label(class="form-label") }}
+            {{ form.ogrenci_id(class="form-select") }}
         </div>
         <div class="mb-3">
             {{ form.tutar.label }}
