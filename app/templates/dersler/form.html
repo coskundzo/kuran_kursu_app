@@ -6,19 +6,31 @@
     <form method="POST">
         {{ form.csrf_token }}
         <div class="mb-3">
-            {{ form.adi.label }}
+            {{ form.adi.label(class="form-label") }}
             {{ form.adi(class="form-control") }}
         </div>
         <div class="mb-3">
-            {{ form.tur.label }}
+            {{ form.kurs_id.label(class="form-label") }}
+            {{ form.kurs_id(class="form-select") }}
+        </div>
+        <div class="mb-3">
+            {{ form.sinif_id.label(class="form-label") }}
+            {{ form.sinif_id(class="form-select") }}
+        </div>
+        <div class="mb-3">
+            {{ form.egitmen_id.label(class="form-label") }}
+            {{ form.egitmen_id(class="form-select") }}
+        </div>
+        <div class="mb-3">
+            {{ form.tur.label(class="form-label") }}
             {{ form.tur(class="form-control") }}
         </div>
         <div class="mb-3">
-            {{ form.konu.label }}
+            {{ form.konu.label(class="form-label") }}
             {{ form.konu(class="form-control") }}
         </div>
         <div class="mb-3">
-            {{ form.aciklama.label }}
+            {{ form.aciklama.label(class="form-label") }}
             {{ form.aciklama(class="form-control") }}
         </div>
         <button type="submit" class="btn btn-success">Ders Ekle</button>
