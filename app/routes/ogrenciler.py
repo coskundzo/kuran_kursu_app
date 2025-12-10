@@ -58,16 +58,18 @@ def liste():
     ogrenciler = pagination.items
     
     # Sınıf listesi (filtreleme için)
-    siniflar = []
     if current_user.tur == 3:
         siniflar = Sinif.query.filter_by(kurs_id=current_user.kaynak_id).all()
+    else:
+        siniflar = Sinif.query.all()
     
     return render_template('ogrenciler/liste.html',
                          ogrenciler=ogrenciler,
                          pagination=pagination,
                          siniflar=siniflar,
                          search=search,
-                         durum=durum)
+                         durum=durum,
+                         sinif_id=sinif_id)
 
 
 @bp.route('/ekle', methods=['GET', 'POST'])

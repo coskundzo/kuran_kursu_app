@@ -34,7 +34,8 @@
                 <select name="sinif_id" class="form-select">
                     <option value="">Tüm Sınıflar</option>
                     {% for sinif in siniflar %}
-                    <option value="{{ sinif.id }}">{{ sinif.adi }}</option>
+                    <option value="{{ sinif.id }}" {% if sinif_id==sinif.id %}selected{% endif %}>{{ sinif.adi }}
+                    </option>
                     {% endfor %}
                 </select>
             </div>
