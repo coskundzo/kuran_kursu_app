@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Eğitmen Detay{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chalkboard-teacher"></i> Eğitmen Detay</h2>
+        <div>
+            <a href="{{ url_for('egitmenler.duzenle', id=egitmen.id) }}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Düzenle
+            </a>
+            <a href="{{ url_for('egitmenler.liste') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Geri
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="card-title border-bottom pb-2 mb-3">Kişisel Bilgiler</h5>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Ad Soyad</label>
+                        <p class="fw-bold">{{ egitmen.adsoyad }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">TC Kimlik No</label>
+                        <p>{{ egitmen.tc or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Doğum Tarihi</label>
+                        <p>{{ egitmen.dogum_tarihi.strftime('%d.%m.%Y') if egitmen.dogum_tarihi else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Cinsiyet</label>
+                        <p>{% if egitmen.cinsiyet == 'E' %}Erkek{% elif egitmen.cinsiyet == 'K' %}Kadın{% else %}-{%
+                            endif %}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Telefon</label>
+                        <p>{{ egitmen.telefon or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">E-posta</label>
+                        <p>{{ egitmen.email or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Adres</label>
+                        <p>{{ egitmen.adres or '-' }}</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h5 class="card-title border-bottom pb-2 mb-3">Görev Bilgileri</h5>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Kurs</label>
+                        <p>{{ egitmen.kurs.adi if egitmen.kurs else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Branş</label>
+                        <p>{{ egitmen.brans or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Görev</label>
+                        <p>{{ egitmen.gorev or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Başlangıç Tarihi</label>
+                        <p>{{ egitmen.baslangic_tarihi.strftime('%d.%m.%Y') if egitmen.baslangic_tarihi else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Ücret</label>
+                        <p>{{ egitmen.ucret if egitmen.ucret else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Durum</label>
+                        <p>
+                            {% if egitmen.durum == 'aktif' %}
+                            <span class="badge bg-success">Aktif</span>
+                            {% elif egitmen.durum == 'pasif' %}
+                            <span class="badge bg-secondary">Pasif</span>
+                            {% elif egitmen.durum == 'ayrıldı' %}
+                            <span class="badge bg-danger">Ayrıldı</span>
+                            {% else %}
+                            <span class="badge bg-secondary">-</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <h5 class="card-title border-bottom pb-2 mb-3 mt-4">Eğitim Bilgileri</h5>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Eğitim Durumu</label>
+                        <p>{{ egitmen.egitim_durumu or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Mezuniyet</label>
+                        <p>{{ egitmen.mezuniyet or '-' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="border-top pt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> Kayıt Tarihi: {{ egitmen.created_at.strftime('%d.%m.%Y
+                            %H:%M') if egitmen.created_at else '-' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

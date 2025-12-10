@@ -37,3 +37,45 @@ def ekle():
         flash('Eğitmen başarıyla eklendi!', 'success')
         return redirect(url_for('egitmenler.liste'))
     return render_template('egitmenler/form.html', form=form)
+
+@bp.route('/<int:id>')
+@login_required
+def detay(id):
+    """Eğitmen detay sayfası"""
+    egitmen = Egitmen.query.get_or_404(id)
+    
+    # Yetki kontrolü
+    if current_user.tur == 3 and egitmen.kurs_id != current_user.kaynak_id:
+        flash('Bu eğitmene erişim yetkiniz yok!', 'danger')
+        return redirect(url_for('egitmenler.liste'))
+    
+    return render_template('egitmenler/detay.html', egitmen=egitmen)
+
+@bp.route('/<int:id>/duzenle', methods=['GET', 'POST'])
+@login_required
+def duzenle(id):
+    """Eğitmen düzenle"""
+    egitmen = Egitmen.query.get_or_404(id)
+    form = EgitmenForm(obj=egitmen)
+    
+    # Yetki kontrolü
+    if current_user.tur == 3 and egitmen.kurs_id != current_user.kaynak_id:
+        flash('Bu eğitmeni düzenleme yetkiniz yok!', 'danger')
+        return redirect(url_for('egitmenler.liste'))
+    
+    # Kurs seçeneklerini yükle
+    form.kurs_id.choices = [(k.id, k.adi) for k in Kurs.query.filter_by(aktif=True).all()]
+    
+    if form.validate_on_submit():
+        egitmen.adsoyad = form.adsoyad.data
+        egitmen.tc = form.tc.data
+        egitmen.telefon = form.telefon.data
+        egitmen.email = form.email.data
+        egitmen.brans = form.brans.data
+        egitmen.kurs_id = form.kurs_id.data
+        
+        db.session.commit()
+        flash('Eğitmen bilgileri güncellendi!', 'success')
+        return redirect(url_for('egitmenler.detay', id=egitmen.id))
+    
+    return render_template('egitmenler/form.html', form=form, egitmen=egitmen)

@@ -76,11 +76,12 @@
                             {% endif %}
                         </td>
                         <td>
-                            <!-- Detay ve düzenle butonları eklenebilir -->
-                            <a href="#" class="btn btn-sm btn-info" title="Görüntüle">
+                            <a href="{{ url_for('egitmenler.detay', id=egitmen.id) }}" class="btn btn-sm btn-info"
+                                title="Görüntüle">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="#" class="btn btn-sm btn-warning" title="Düzenle">
+                            <a href="{{ url_for('egitmenler.duzenle', id=egitmen.id) }}" class="btn btn-sm btn-warning"
+                                title="Düzenle">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </td>
