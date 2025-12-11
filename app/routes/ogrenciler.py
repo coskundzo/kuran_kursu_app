@@ -200,7 +200,7 @@ def duzenle(id):
                          kurslar=kurslar)
 
 
-@bp.route('/<int:id>/sil', methods=['POST'])
+@bp.route('/<int:id>/sil', methods=['GET', 'POST'])
 @login_required
 def sil(id):
     """Öğrenci sil"""
@@ -208,16 +208,60 @@ def sil(id):
     
     # Yetki kontrolü
     if current_user.tur == 3 and ogrenci.kurs_id != current_user.kaynak_id:
-        return jsonify({'success': False, 'message': 'Yetkiniz yok!'}), 403
+        flash('Yetkiniz yok!', 'danger')
+        return redirect(url_for('ogrenciler.liste'))
     
+    # İlişkili kayıtları kontrol et
+    iliskili_kayitlar = []
+    
+    aidat_sayisi = ogrenci.aidat_hareketleri.count()
+    if aidat_sayisi > 0:
+        iliskili_kayitlar.append(f"{aidat_sayisi} aidat kaydı")
+    
+    yoklama_sayisi = ogrenci.yoklamalar.count()
+    if yoklama_sayisi > 0:
+        iliskili_kayitlar.append(f"{yoklama_sayisi} yoklama kaydı")
+    
+    # Hafızlık dersleri kontrolü
+    from app.models.ders import HafizlikDers
+    hafizlik_sayisi = HafizlikDers.query.filter_by(ogrenci_id=ogrenci.id).count()
+    if hafizlik_sayisi > 0:
+        iliskili_kayitlar.append(f"{hafizlik_sayisi} hafızlık ders kaydı")
+    
+    # Sınav sonuçları kontrolü
+    sinav_sayisi = ogrenci.sinavlar.count()
+    if sinav_sayisi > 0:
+        iliskili_kayitlar.append(f"{sinav_sayisi} sınav sonucu")
+    
+    # GET isteği - onay sayfasını göster
+    if request.method == 'GET':
+        return render_template('ogrenciler/sil_onay.html', 
+                             ogrenci=ogrenci, 
+                             iliskili_kayitlar=iliskili_kayitlar)
+    
+    # POST isteği - silme işlemini gerçekleştir
     try:
+        # İlişkili tüm kayıtları sil
+        for aidat in ogrenci.aidat_hareketleri.all():
+            db.session.delete(aidat)
+        
+        for yoklama in ogrenci.yoklamalar.all():
+            db.session.delete(yoklama)
+        
+        for hafizlik in HafizlikDers.query.filter_by(ogrenci_id=ogrenci.id).all():
+            db.session.delete(hafizlik)
+        
+        for sinav in ogrenci.sinavlar.all():
+            db.session.delete(sinav)
+        
         db.session.delete(ogrenci)
         db.session.commit()
-        flash('Öğrenci silindi!', 'success')
-        return jsonify({'success': True})
+        flash(f'{ogrenci.adsoyad} başarıyla silindi!', 'success')
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 500
+        flash(f'Hata: {str(e)}', 'danger')
+    
+    return redirect(url_for('ogrenciler.liste'))
 
 
 # API Endpoints
