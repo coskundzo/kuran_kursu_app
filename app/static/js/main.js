@@ -1,10 +1,8 @@
 // Custom JavaScript for E-Kuran Kursu
 
 $(document).ready(function () {
-    // Auto-hide alerts after 5 seconds
-    setTimeout(function () {
-        $('.alert').fadeOut('slow');
-    }, 5000);
+    // Alerts will stay visible until manually dismissed by user
+    // (No auto-hide timeout)
 
     // Confirm delete actions
     $('.btn-delete').on('click', function (e) {
