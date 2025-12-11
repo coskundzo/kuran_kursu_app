@@ -91,6 +91,10 @@
                                 title="Düzenle">
                                 <i class="fas fa-edit"></i>
                             </a>
+                            <form method="POST" action="{{ url_for('ogrenciler.sil', id=ogrenci.id) }}" style="display:inline;" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Sil"><i class="fas fa-trash"></i></button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
