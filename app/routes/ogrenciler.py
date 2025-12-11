@@ -174,6 +174,12 @@ def duzenle(id):
             ogrenci.egitmen_id = request.form.get('egitmen_id', type=int)
             ogrenci.durum = request.form.get('durum')
             
+            # Kurs bilgisi sadece admin ve müftü güncelleyebilir
+            if current_user.tur in [1, 2]:
+                kurs_id = request.form.get('kurs_id', type=int)
+                if kurs_id:
+                    ogrenci.kurs_id = kurs_id
+            
             db.session.commit()
             
             flash('Öğrenci bilgileri güncellendi!', 'success')
@@ -187,7 +193,9 @@ def duzenle(id):
     if current_user.tur == 3:  # Kurs kullanıcısı
         siniflar = Sinif.query.filter_by(kurs_id=current_user.kaynak_id).all()
         egitmenler = Egitmen.query.filter_by(kurs_id=current_user.kaynak_id).all()
-        kurslar = []
+        # Kurs kullanıcısı kendi kursunu görsün ama değiştiremez
+        kurs = Kurs.query.get(current_user.kaynak_id)
+        kurslar = [kurs] if kurs else []
     else:  # Admin veya diğer kullanıcılar
         siniflar = Sinif.query.all()
         egitmenler = Egitmen.query.all()

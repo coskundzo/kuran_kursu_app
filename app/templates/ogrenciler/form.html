@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Öğrenci Ekle{% endblock %}
+{% block title %}{% if ogrenci %}Öğrenci Düzenle{% else %}Öğrenci Ekle{% endif %}{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h2>Öğrenci Ekle</h2>
+    <h2>{% if ogrenci %}Öğrenci Düzenle{% else %}Öğrenci Ekle{% endif %}</h2>
     <form method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="row">
@@ -47,9 +47,22 @@
                 </div>
             </div>
             <div class="col-md-6">
-                {% if current_user.tur != 3 %}
+                {% if kurslar %}
                 <div class="mb-3">
                     <label for="kurs_id" class="form-label">Kurs *</label>
+                    {% if current_user.tur == 3 %}
+                    <!-- Kurs kullanıcısı için sadece göster -->
+                    <select class="form-select" disabled>
+                        {% for kurs in kurslar %}
+                        <option {% if ogrenci and ogrenci.kurs_id==kurs.id %}selected{% endif %}>
+                            {{ kurs.adi }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="kurs_id"
+                        value="{{ ogrenci.kurs_id if ogrenci else current_user.kaynak_id }}">
+                    <small class="text-muted">Kurs bilgisi değiştirilemez</small>
+                    {% else %}
+                    <!-- Admin ve müftü için değiştirilebilir -->
                     <select class="form-select" id="kurs_id" name="kurs_id" required>
                         <option value="">Seçiniz</option>
                         {% for kurs in kurslar %}
@@ -57,6 +70,7 @@
                             {{ kurs.adi }}</option>
                         {% endfor %}
                     </select>
+                    {% endif %}
                 </div>
                 {% endif %}
                 <div class="mb-3">
@@ -106,7 +120,10 @@
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-success">Öğrenci Ekle</button>
+        <button type="submit" class="btn btn-success">
+            {% if ogrenci %}Bilgileri Kaydet{% else %}Öğrenci Ekle{% endif %}
+        </button>
+        <a href="{{ url_for('ogrenciler.liste') }}" class="btn btn-secondary">İptal</a>
     </form>
 </div>
 {% endblock %}
