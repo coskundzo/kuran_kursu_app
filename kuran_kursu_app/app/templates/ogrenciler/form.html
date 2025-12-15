@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}{% if ogrenci %}Öğrenci Düzenle{% else %}Öğrenci Ekle{% endif %}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if ogrenci %}Öğrenci Düzenle{% else %}Öğrenci Ekle{% endif %}</h2>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="adsoyad" class="form-label">Ad Soyad</label>
+                    <input type="text" class="form-control" id="adsoyad" name="adsoyad" required
+                        value="{{ ogrenci.adsoyad if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="tc" class="form-label">TC Kimlik No</label>
+                    <input type="text" class="form-control" id="tc" name="tc"
+                        value="{{ ogrenci.tc if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="dogum_tarihi" class="form-label">Doğum Tarihi</label>
+                    <input type="date" class="form-control" id="dogum_tarihi" name="dogum_tarihi"
+                        value="{{ ogrenci.dogum_tarihi if ogrenci and ogrenci.dogum_tarihi else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="cinsiyet" class="form-label">Cinsiyet</label>
+                    <select class="form-select" id="cinsiyet" name="cinsiyet">
+                        <option value="">Seçiniz</option>
+                        <option value="E" {% if ogrenci and ogrenci.cinsiyet=='E' %}selected{% endif %}>Erkek</option>
+                        <option value="K" {% if ogrenci and ogrenci.cinsiyet=='K' %}selected{% endif %}>Kadın</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="telefon" class="form-label">Telefon</label>
+                    <input type="text" class="form-control" id="telefon" name="telefon"
+                        value="{{ ogrenci.telefon if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-posta</label>
+                    <input type="email" class="form-control" id="email" name="email"
+                        value="{{ ogrenci.email if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="adres" class="form-label">Adres</label>
+                    <input type="text" class="form-control" id="adres" name="adres"
+                        value="{{ ogrenci.adres if ogrenci else '' }}">
+                </div>
+            </div>
+            <div class="col-md-6">
+                {% if kurslar %}
+                <div class="mb-3">
+                    <label for="kurs_id" class="form-label">Kurs *</label>
+                    {% if current_user.tur == 3 %}
+                    <!-- Kurs kullanıcısı için sadece göster -->
+                    <select class="form-select" disabled>
+                        {% for kurs in kurslar %}
+                        <option {% if ogrenci and ogrenci.kurs_id==kurs.id %}selected{% endif %}>
+                            {{ kurs.adi }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="kurs_id"
+                        value="{{ ogrenci.kurs_id if ogrenci else current_user.kaynak_id }}">
+                    <small class="text-muted">Kurs bilgisi değiştirilemez</small>
+                    {% else %}
+                    <!-- Admin ve müftü için değiştirilebilir -->
+                    <select class="form-select" id="kurs_id" name="kurs_id" required>
+                        <option value="">Seçiniz</option>
+                        {% for kurs in kurslar %}
+                        <option value="{{ kurs.id }}" {% if ogrenci and ogrenci.kurs_id==kurs.id %}selected{% endif %}>
+                            {{ kurs.adi }}</option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <div class="mb-3">
+                    <label for="veli_adi" class="form-label">Veli Adı</label>
+                    <input type="text" class="form-control" id="veli_adi" name="veli_adi"
+                        value="{{ ogrenci.veli_adi if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="veli_telefon" class="form-label">Veli Telefon</label>
+                    <input type="text" class="form-control" id="veli_telefon" name="veli_telefon"
+                        value="{{ ogrenci.veli_telefon if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="veli_email" class="form-label">Veli E-posta</label>
+                    <input type="email" class="form-control" id="veli_email" name="veli_email"
+                        value="{{ ogrenci.veli_email if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="sinif_id" class="form-label">Sınıf</label>
+                    <select class="form-select" id="sinif_id" name="sinif_id">
+                        <option value="">Seçiniz</option>
+                        {% for sinif in siniflar %}
+                        <option value="{{ sinif.id }}" {% if ogrenci and ogrenci.sinif_id==sinif.id %}selected{% endif
+                            %}>{{ sinif.adi }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="egitmen_id" class="form-label">Eğitmen</label>
+                    <select class="form-select" id="egitmen_id" name="egitmen_id">
+                        <option value="">Seçiniz</option>
+                        {% for egitmen in egitmenler %}
+                        <option value="{{ egitmen.id }}" {% if ogrenci and ogrenci.egitmen_id==egitmen.id %}selected{%
+                            endif %}>{{ egitmen.adsoyad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="sicil_no" class="form-label">Sicil No</label>
+                    <input type="text" class="form-control" id="sicil_no" name="sicil_no"
+                        value="{{ ogrenci.sicil_no if ogrenci else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="egitim_turu" class="form-label">Eğitim Türü</label>
+                    <input type="text" class="form-control" id="egitim_turu" name="egitim_turu"
+                        value="{{ ogrenci.egitim_turu if ogrenci else '' }}">
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success">
+            {% if ogrenci %}Bilgileri Kaydet{% else %}Öğrenci Ekle{% endif %}
+        </button>
+        <a href="{{ url_for('ogrenciler.liste') }}" class="btn btn-secondary">İptal</a>
+    </form>
+</div>
+{% endblock %}

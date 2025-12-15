@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Ders Detay{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-book"></i> Ders Detay</h2>
+        <div>
+            <a href="{{ url_for('dersler.duzenle', id=ders.id) }}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Düzenle
+            </a>
+            <a href="{{ url_for('dersler.liste') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Geri
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="card-title border-bottom pb-2 mb-3">Ders Bilgileri</h5>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Ders Adı</label>
+                        <p class="fw-bold">{{ ders.adi }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Kurs</label>
+                        <p>{{ ders.kurs.adi if ders.kurs else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Sınıf</label>
+                        <p>{{ ders.sinif.adi if ders.sinif else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Eğitmen</label>
+                        <p>{{ ders.egitmen.adsoyad if ders.egitmen else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Ders Türü</label>
+                        <p>{{ ders.tur or '-' }}</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h5 class="card-title border-bottom pb-2 mb-3">Tarih ve Saat</h5>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Tarih</label>
+                        <p>{{ ders.tarih.strftime('%d.%m.%Y') if ders.tarih else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Başlangıç Saati</label>
+                        <p>{{ ders.baslangic_saati.strftime('%H:%M') if ders.baslangic_saati else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Bitiş Saati</label>
+                        <p>{{ ders.bitis_saati.strftime('%H:%M') if ders.bitis_saati else '-' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h5 class="card-title border-bottom pb-2 mb-3">İçerik</h5>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Konu</label>
+                        <p>{{ ders.konu or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Açıklama</label>
+                        <p>{{ ders.aciklama or '-' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="border-top pt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> Kayıt Tarihi: {{ ders.created_at.strftime('%d.%m.%Y %H:%M')
+                            if ders.created_at else '-' }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

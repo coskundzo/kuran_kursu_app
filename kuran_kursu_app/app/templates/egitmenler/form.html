@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Eğitmen Ekle{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Eğitmen Ekle</h2>
+    <form method="POST">
+        {{ form.csrf_token }}
+        <div class="mb-3">
+            {{ form.adsoyad.label }}
+            {{ form.adsoyad(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.tc.label }}
+            {{ form.tc(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.telefon.label }}
+            {{ form.telefon(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.email.label }}
+            {{ form.email(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.kurs_id.label(class="form-label") }}
+            {{ form.kurs_id(class="form-select") }}
+            {% if form.kurs_id.errors %}
+            <div class="text-danger">
+                {% for error in form.kurs_id.errors %}
+                <small>{{ error }}</small>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {{ form.brans.label }}
+            {{ form.brans(class="form-control") }}
+        </div>
+        {{ form.submit(class="btn btn-success") }}
+        <a href="{{ url_for('egitmenler.liste') }}" class="btn btn-secondary">İptal</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Erişim Engellendi - E-Kuran Kursu{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="error-template">
+                <h1 class="display-1 text-warning">
+                    <i class="fas fa-lock"></i> 403
+                </h1>
+                <h2 class="mb-4">Erişim Engellendi</h2>
+                <p class="lead mb-4">
+                    Bu sayfaya erişim yetkiniz bulunmamaktadır. Bu içeriği görüntülemek için
+                    gerekli izinlere sahip değilsiniz.
+                </p>
+                <div class="error-actions">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg me-2">
+                        <i class="fas fa-home"></i> Ana Sayfaya Dön
+                    </a>
+                    <a href="javascript:history.back()" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-arrow-left"></i> Geri Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-template {
+        padding: 40px 15px;
+    }
+
+    .error-template h1 {
+        font-size: 8rem;
+        font-weight: bold;
+    }
+
+    .error-actions {
+        margin-top: 30px;
+    }
+</style>
+{% endblock %}

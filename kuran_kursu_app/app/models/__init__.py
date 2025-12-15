@@ -1,0 +1,1 @@
+# Model dosyası, uygulama başlatma içermez. Sadece model tanımları ve importları olmalı.

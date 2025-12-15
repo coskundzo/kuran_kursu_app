@@ -1,0 +1,7 @@
+--------------- HATALAR -------------------
+
+1. Eğitmen sayfasında eğitmen ekle deyince hata verdi.
+2. The CSRF token is missing. öğrenci ekle kısmında ekle deyince token hatası veriyor.
+3. APP BAR sabit değil sabitlenicek
+4. APP BAR sağdaki profil ismini sabit yapılacak ismi ne kadar uzun yazarsak ismin solundaki iconlar kayıyor.
+5. Kişiler button olarak kalmış üstüne gelincede açılıyor tıklayıncada açılıyor.

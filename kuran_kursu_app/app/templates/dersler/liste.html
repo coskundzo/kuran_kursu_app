@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Dersler - E-Kuran Kursu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-book"></i> Dersler</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('dersler.ekle') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Yeni Ders Ekle
+        </a>
+    </div>
+</div>
+
+<!-- Filtreler (örnek, backend ile uyumlu hale getirilebilir) -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('dersler.liste') }}" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control"
+                    placeholder="Ders adı, konu veya eğitmen ile ara...">
+            </div>
+            <div class="col-md-3">
+                <select name="tur" class="form-select">
+                    <option value="">Tüm Türler</option>
+                    <option value="hafızlık">Hafızlık</option>
+                    <option value="yüzüne">Yüzüne</option>
+                    <option value="özel">Özel</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Ara
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Dersler Listesi -->
+<div class="card">
+    <div class="card-body">
+        {% if dersler %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ders Adı</th>
+                        <th>Kurs</th>
+                        <th>Sınıf</th>
+                        <th>Eğitmen</th>
+                        <th>Tarih</th>
+                        <th>Başlangıç</th>
+                        <th>Bitiş</th>
+                        <th>Tür</th>
+                        <th>Konu</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ders in dersler %}
+                    <tr>
+                        <td>{{ ders.id }}</td>
+                        <td>{{ ders.adi }}</td>
+                        <td>{{ ders.kurs_id }}</td>
+                        <td>{{ ders.sinif_id or '-' }}</td>
+                        <td>{{ ders.egitmen_id or '-' }}</td>
+                        <td>{{ ders.tarih.strftime('%d.%m.%Y') if ders.tarih else '-' }}</td>
+                        <td>{{ ders.baslangic_saati.strftime('%H:%M') if ders.baslangic_saati else '-' }}</td>
+                        <td>{{ ders.bitis_saati.strftime('%H:%M') if ders.bitis_saati else '-' }}</td>
+                        <td>{{ ders.tur or '-' }}</td>
+                        <td>{{ ders.konu or '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('dersler.detay', id=ders.id) }}" class="btn btn-sm btn-info"
+                                title="Görüntüle">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('dersler.duzenle', id=ders.id) }}" class="btn btn-sm btn-warning"
+                                title="Düzenle">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Henüz ders bulunmamaktadır.</p>
+            <a href="{{ url_for('dersler.ekle') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> İlk Dersi Ekle
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
