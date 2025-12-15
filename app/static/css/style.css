@@ -135,3 +135,33 @@ footer {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
 }
+
+.nav-link {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+}
+
+.dropdown-menu {
+    background-color: #46576a;
+}
+
+.dropdown-item {
+    color: #cfe6f5;
+}
+
+.dropdown-item:hover {
+    background-color: #3b4654;
+    color: #fff;
+}
+
+
+/* Hover ile dropdown açılması */
+.nav-item.dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0;
+    /* Dropdown yukarı kaymasın */
+}
+/* Hover olduğunda link aktif görünsün */
+.nav-item.dropdown:hover>.nav-link {
+    color: #fff !important;
+}
