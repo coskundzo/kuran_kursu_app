@@ -141,27 +141,28 @@ footer {
     padding-right: 5px !important;
 }
 
+/* Dropdown Menu Styles */
 .dropdown-menu {
-    background-color: #46576a;
+    background-color: #1a1f28 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .dropdown-item {
-    color: #cfe6f5;
+    color: #95a5b3 !important;
 }
 
 .dropdown-item:hover {
-    background-color: #3b4654;
-    color: #fff;
+    background-color: #252c35 !important;
+    color: #a8b5c0 !important;
 }
-
 
 /* Hover ile dropdown açılması */
 .nav-item.dropdown:hover .dropdown-menu {
     display: block;
     margin-top: 0;
-    /* Dropdown yukarı kaymasın */
 }
+
 /* Hover olduğunda link aktif görünsün */
-.nav-item.dropdown:hover>.nav-link {
+.nav-item.dropdown:hover > .nav-link {
     color: #fff !important;
 }
