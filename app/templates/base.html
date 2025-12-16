@@ -43,13 +43,13 @@
 
                     <!-- Kişiler Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-white fw-semibold" href="#" role="button"
+                        <a class="nav-link dropdown-toggle text-white fw-semibold" href="/ogrenciler" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Kişiler
                         </a>
                         <ul class="dropdown-menu">
 
-                            <li><a class="dropdown-item text-white" href="#"><i
+                            <li><a class="dropdown-item text-white" href="{{ url_for('ogrenciler.liste') }}"><i
                                         class="bi bi-person-fill me-2"></i>Öğrenciler</a></li>
                             <li><a class="dropdown-item text-white" href="#"><i
                                         class="bi bi-person-plus-fill me-2"></i>Önkayıtlı Öğrenciler</a></li>

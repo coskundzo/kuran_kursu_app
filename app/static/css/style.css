@@ -163,6 +163,6 @@ footer {
 }
 
 /* Hover olduğunda link aktif görünsün */
-.nav-item.dropdown:hover > .nav-link {
+.nav-item.dropdown:hover>.nav-link {
     color: #fff !important;
 }
