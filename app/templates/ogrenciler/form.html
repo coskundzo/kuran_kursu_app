@@ -118,6 +118,19 @@
                     <input type="text" class="form-control" id="egitim_turu" name="egitim_turu"
                         value="{{ ogrenci.egitim_turu if ogrenci else '' }}">
                 </div>
+                {% if ogrenci %}
+                <div class="mb-3">
+                    <label for="durum" class="form-label">Durum</label>
+                    <select class="form-select" id="durum" name="durum">
+                        <option value="aktif" {% if ogrenci.durum=='aktif' %}selected{% endif %}>Aktif</option>
+                        <option value="onkayit" {% if ogrenci.durum=='onkayit' %}selected{% endif %}>Ön Kayıt</option>
+                        <option value="mezun" {% if ogrenci.durum=='mezun' %}selected{% endif %}>Mezun</option>
+                        <option value="terk" {% if ogrenci.durum=='terk' %}selected{% endif %}>Terk</option>
+                        <option value="ayrıldı" {% if ogrenci.durum=='ayrıldı' %}selected{% endif %}>Ayrıldı</option>
+                    </select>
+                    <small class="text-muted">Öğrencinin mevcut durumunu seçiniz</small>
+                </div>
+                {% endif %}
             </div>
         </div>
         <button type="submit" class="btn btn-success">
