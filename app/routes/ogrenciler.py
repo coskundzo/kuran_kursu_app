@@ -588,6 +588,124 @@ def mezun_detay(id):
     return render_template('ogrenciler/mezun_detay.html', ogrenci=ogrenci)
 
 
+# Terk Öğrenciler
+@bp.route('/terk')
+@login_required
+def terk_liste():
+    """Terk öğrenci listesi"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    # Kullanıcının kurs filtresi
+    query = Ogrenci.query.filter_by(durum='terk')
+    
+    if current_user.tur == 3:  # Kurs kullanıcısı
+        query = query.filter_by(kurs_id=current_user.kaynak_id)
+    elif current_user.tur == 4:  # Eğitmen
+        egitmen = Egitmen.query.get(current_user.kaynak_id)
+        if egitmen:
+            query = query.filter_by(kurs_id=egitmen.kurs_id)
+    
+    # Arama
+    search = request.args.get('search', '')
+    if search:
+        query = query.filter(
+            db.or_(
+                Ogrenci.adsoyad.like(f'%{search}%'),
+                Ogrenci.tc.like(f'%{search}%'),
+                Ogrenci.sicil_no.like(f'%{search}%')
+            )
+        )
+    
+    # Sıralama
+    query = query.order_by(Ogrenci.updated_at.desc())
+    
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    ogrenciler = pagination.items
+    
+    return render_template('ogrenciler/terk_liste.html',
+                         ogrenciler=ogrenciler,
+                         pagination=pagination,
+                         search=search)
+
+
+@bp.route('/terk/<int:id>')
+@login_required
+def terk_detay(id):
+    """Terk öğrenci detay sayfası"""
+    ogrenci = Ogrenci.query.get_or_404(id)
+    
+    # Yetki kontrolü
+    if current_user.tur == 3 and ogrenci.kurs_id != current_user.kaynak_id:
+        flash('Bu öğrenciye erişim yetkiniz yok!', 'danger')
+        return redirect(url_for('ogrenciler.terk_liste'))
+    
+    if ogrenci.durum != 'terk':
+        flash('Bu öğrenci terk durumunda değil!', 'warning')
+        return redirect(url_for('ogrenciler.terk_liste'))
+    
+    return render_template('ogrenciler/terk_detay.html', ogrenci=ogrenci)
+
+
+# Ayrılan Öğrenciler
+@bp.route('/ayrilan')
+@login_required
+def ayrilan_liste():
+    """Ayrılan öğrenci listesi"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    # Kullanıcının kurs filtresi
+    query = Ogrenci.query.filter_by(durum='ayrıldı')
+    
+    if current_user.tur == 3:  # Kurs kullanıcısı
+        query = query.filter_by(kurs_id=current_user.kaynak_id)
+    elif current_user.tur == 4:  # Eğitmen
+        egitmen = Egitmen.query.get(current_user.kaynak_id)
+        if egitmen:
+            query = query.filter_by(kurs_id=egitmen.kurs_id)
+    
+    # Arama
+    search = request.args.get('search', '')
+    if search:
+        query = query.filter(
+            db.or_(
+                Ogrenci.adsoyad.like(f'%{search}%'),
+                Ogrenci.tc.like(f'%{search}%'),
+                Ogrenci.sicil_no.like(f'%{search}%')
+            )
+        )
+    
+    # Sıralama
+    query = query.order_by(Ogrenci.updated_at.desc())
+    
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    ogrenciler = pagination.items
+    
+    return render_template('ogrenciler/ayrilan_liste.html',
+                         ogrenciler=ogrenciler,
+                         pagination=pagination,
+                         search=search)
+
+
+@bp.route('/ayrilan/<int:id>')
+@login_required
+def ayrilan_detay(id):
+    """Ayrılan öğrenci detay sayfası"""
+    ogrenci = Ogrenci.query.get_or_404(id)
+    
+    # Yetki kontrolü
+    if current_user.tur == 3 and ogrenci.kurs_id != current_user.kaynak_id:
+        flash('Bu öğrenciye erişim yetkiniz yok!', 'danger')
+        return redirect(url_for('ogrenciler.ayrilan_liste'))
+    
+    if ogrenci.durum != 'ayrıldı':
+        flash('Bu öğrenci ayrılmış durumda değil!', 'warning')
+        return redirect(url_for('ogrenciler.ayrilan_liste'))
+    
+    return render_template('ogrenciler/ayrilan_detay.html', ogrenci=ogrenci)
+
+
 # API Endpoints
 @bp.route('/api/<int:id>')
 @login_required

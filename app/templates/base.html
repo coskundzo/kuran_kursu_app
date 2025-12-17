@@ -26,7 +26,7 @@
         <div class="container-fluid">
 
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"
+                <img src="{{ url_for('static', filename='images/logo_yeni.png') }}" alt="Logo"
                     style="height: 60px; margin-right: 0px; margin-left: 10px;">
 
             </a>
@@ -55,9 +55,9 @@
                                         class="bi bi-person-plus-fill me-2"></i>Önkayıtlı Öğrenciler</a></li>
                             <li><a class="dropdown-item text-white" href="{{ url_for('ogrenciler.mezun_liste') }}"><i
                                         class="bi bi-person-check-fill me-2"></i>Mezunlar</a></li>
-                            <li><a class="dropdown-item text-white" href="#"><i
+                            <li><a class="dropdown-item text-white" href="{{ url_for('ogrenciler.terk_liste') }}"><i
                                         class="bi bi-person-dash-fill me-2"></i>Terk Öğrenciler</a></li>
-                            <li><a class="dropdown-item text-white" href="#"><i
+                            <li><a class="dropdown-item text-white" href="{{ url_for('ogrenciler.ayrilan_liste') }}"><i
                                         class="bi bi-person-x-fill me-2"></i>Ayrılan Öğrenciler</a></li>
                             <li><a class="dropdown-item text-white" href="{{ url_for('egitmenler.liste') }}"><i
                                         class="bi bi-person-badge-fill me-2"></i>Eğitmenler</a></li>

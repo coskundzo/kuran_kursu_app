@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Ayrılan Öğrenci Detay{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user-slash"></i> Ayrılan Öğrenci Detay</h2>
+        <div>
+            <a href="{{ url_for('ogrenciler.duzenle', id=ogrenci.id) }}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Düzenle
+            </a>
+            <a href="{{ url_for('ogrenciler.ayrilan_liste') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Geri
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="card-title border-bottom pb-2 mb-3">Kişisel Bilgiler</h5>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Ad Soyad</label>
+                        <p class="fw-bold">{{ ogrenci.adsoyad }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">TC Kimlik No</label>
+                        <p>{{ ogrenci.tc or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Doğum Tarihi</label>
+                        <p>{{ ogrenci.dogum_tarihi.strftime('%d.%m.%Y') if ogrenci.dogum_tarihi else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Doğum Yeri</label>
+                        <p>{{ ogrenci.dogum_yeri or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Cinsiyet</label>
+                        <p>{% if ogrenci.cinsiyet == 'E' %}Erkek{% elif ogrenci.cinsiyet == 'K' %}Kız{% else %}-{% endif
+                            %}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Telefon</label>
+                        <p>{{ ogrenci.telefon or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">E-posta</label>
+                        <p>{{ ogrenci.email or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Adres</label>
+                        <p>{{ ogrenci.adres or '-' }}</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h5 class="card-title border-bottom pb-2 mb-3">Eğitim Bilgileri</h5>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Kurs</label>
+                        <p>{{ ogrenci.kurs.adi if ogrenci.kurs else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Sınıf</label>
+                        <p>{{ ogrenci.sinif.adi if ogrenci.sinif else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Eğitmen</label>
+                        <p>{{ ogrenci.egitmen.adsoyad if ogrenci.egitmen else '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Sicil No</label>
+                        <p>{{ ogrenci.sicil_no or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Eğitim Türü</label>
+                        <p>{{ ogrenci.egitim_turu or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Dönem</label>
+                        <p>{{ ogrenci.donem or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Durum</label>
+                        <p>
+                            <span class="badge bg-secondary">Ayrıldı</span>
+                        </p>
+                    </div>
+
+                    <h5 class="card-title border-bottom pb-2 mb-3 mt-4">Veli Bilgileri</h5>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Veli Adı</label>
+                        <p>{{ ogrenci.veli_adi or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Veli Telefon</label>
+                        <p>{{ ogrenci.veli_telefon or '-' }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">Veli E-posta</label>
+                        <p>{{ ogrenci.veli_email or '-' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="border-top pt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> Kayıt Tarihi: {{ ogrenci.kayit_tarihi.strftime('%d.%m.%Y')
+                            if ogrenci.kayit_tarihi else '-' }}
+                        </small>
+                        {% if ogrenci.updated_at %}
+                        <small class="text-muted ms-3">
+                            <i class="fas fa-user-slash"></i> Ayrılma Tarihi: {{ ogrenci.updated_at.strftime('%d.%m.%Y')
+                            }}
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
