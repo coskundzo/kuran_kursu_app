@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{% if ogrenci %}Ön Kayıt Düzenle{% else %}Ön Kayıt Ekle{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>
+                <i class="bi bi-person-plus-fill me-2"></i>
+                {% if ogrenci %}Ön Kayıt Düzenle{% else %}Yeni Ön Kayıt{% endif %}
+            </h2>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('ogrenciler.onkayit_liste') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Geri
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Kişisel Bilgiler -->
+                <h5 class="mb-3 text-primary">
+                    <i class="bi bi-person me-2"></i>Kişisel Bilgiler
+                </h5>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="adsoyad" class="form-label">Ad Soyad <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="adsoyad" name="adsoyad"
+                            value="{{ ogrenci.adsoyad if ogrenci else '' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="tc" class="form-label">TC Kimlik No</label>
+                        <input type="text" class="form-control" id="tc" name="tc" maxlength="11"
+                            value="{{ ogrenci.tc if ogrenci else '' }}">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="dogum_tarihi" class="form-label">Doğum Tarihi</label>
+                        <input type="date" class="form-control" id="dogum_tarihi" name="dogum_tarihi"
+                            value="{{ ogrenci.dogum_tarihi.strftime('%Y-%m-%d') if ogrenci and ogrenci.dogum_tarihi else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="dogum_yeri" class="form-label">Doğum Yeri</label>
+                        <input type="text" class="form-control" id="dogum_yeri" name="dogum_yeri"
+                            value="{{ ogrenci.dogum_yeri if ogrenci else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="cinsiyet" class="form-label">Cinsiyet</label>
+                        <select class="form-select" id="cinsiyet" name="cinsiyet">
+                            <option value="">Seçiniz</option>
+                            <option value="E" {% if ogrenci and ogrenci.cinsiyet=='E' %}selected{% endif %}>Erkek
+                            </option>
+                            <option value="K" {% if ogrenci and ogrenci.cinsiyet=='K' %}selected{% endif %}>Kız</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- İletişim Bilgileri -->
+                <hr class="my-4">
+                <h5 class="mb-3 text-primary">
+                    <i class="bi bi-telephone me-2"></i>İletişim Bilgileri
+                </h5>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="telefon" class="form-label">Telefon</label>
+                        <input type="tel" class="form-control" id="telefon" name="telefon"
+                            value="{{ ogrenci.telefon if ogrenci else '' }}">
+                    </div>
+                    <div class="col-md-8">
+                        <label for="email" class="form-label">E-posta</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                            value="{{ ogrenci.email if ogrenci else '' }}">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="adres" class="form-label">Adres</label>
+                        <textarea class="form-control" id="adres" name="adres"
+                            rows="3">{{ ogrenci.adres if ogrenci else '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Veli Bilgileri -->
+                <hr class="my-4">
+                <h5 class="mb-3 text-primary">
+                    <i class="bi bi-people me-2"></i>Veli Bilgileri
+                </h5>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="veli_adi" class="form-label">Veli Adı</label>
+                        <input type="text" class="form-control" id="veli_adi" name="veli_adi"
+                            value="{{ ogrenci.veli_adi if ogrenci else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="veli_telefon" class="form-label">Veli Telefon</label>
+                        <input type="tel" class="form-control" id="veli_telefon" name="veli_telefon"
+                            value="{{ ogrenci.veli_telefon if ogrenci else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="veli_email" class="form-label">Veli E-posta</label>
+                        <input type="email" class="form-control" id="veli_email" name="veli_email"
+                            value="{{ ogrenci.veli_email if ogrenci else '' }}">
+                    </div>
+                </div>
+
+                <!-- Kurs Bilgisi (Sadece Admin için) -->
+                {% if kurslar %}
+                <hr class="my-4">
+                <h5 class="mb-3 text-primary">
+                    <i class="bi bi-building me-2"></i>Kurs Bilgisi
+                </h5>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="kurs_id" class="form-label">Kurs <span class="text-danger">*</span></label>
+                        <select class="form-select" id="kurs_id" name="kurs_id" required>
+                            <option value="">Kurs Seçiniz</option>
+                            {% for kurs in kurslar %}
+                            <option value="{{ kurs.id }}" {% if ogrenci and ogrenci.kurs_id==kurs.id %}selected{% endif
+                                %}>
+                                {{ kurs.adi }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Butonlar -->
+                <hr class="my-4">
+                <div class="row">
+                    <div class="col-md-12 text-end">
+                        <a href="{{ url_for('ogrenciler.onkayit_liste') }}" class="btn btn-secondary me-2">
+                            <i class="bi bi-x-circle me-2"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>
+                            {% if ogrenci %}Güncelle{% else %}Kaydet{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // TC Kimlik No validasyonu
+    document.getElementById('tc').addEventListener('input', function (e) {
+        this.value = this.value.replace(/[^0-9]/g, '').substring(0, 11);
+    });
+
+    // Telefon formatı
+    document.querySelectorAll('input[type="tel"]').forEach(function (tel) {
+        tel.addEventListener('input', function (e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    });
+</script>
+{% endblock %}

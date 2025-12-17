@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Ön Kayıtlı Öğrenciler - E-Kuran Kursu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-user-plus"></i> Ön Kayıtlı Öğrenciler</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('ogrenciler.onkayit_ekle') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Yeni Ön Kayıt Ekle
+        </a>
+    </div>
+</div>
+
+<!-- Filtreler -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('ogrenciler.onkayit_liste') }}" class="row g-3">
+            <div class="col-md-10">
+                <input type="text" name="search" class="form-control" placeholder="Ad, TC veya Telefon ile ara..."
+                    value="{{ search }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Ara
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Öğrenci Listesi -->
+<div class="card">
+    <div class="card-body">
+        {% if ogrenciler %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Sicil No</th>
+                        <th>Ad Soyad</th>
+                        <th>TC</th>
+                        <th>Telefon</th>
+                        <th>Veli</th>
+                        <th>Veli Telefon</th>
+                        <th>Kayıt Tarihi</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ogrenci in ogrenciler %}
+                    <tr>
+                        <td>{{ ogrenci.sicil_no or '-' }}</td>
+                        <td>{{ ogrenci.adsoyad }}</td>
+                        <td>{{ ogrenci.tc or '-' }}</td>
+                        <td>{{ ogrenci.telefon or '-' }}</td>
+                        <td>{{ ogrenci.veli_adi or '-' }}</td>
+                        <td>{{ ogrenci.veli_telefon or '-' }}</td>
+                        <td>{{ ogrenci.kayit_tarihi.strftime('%d.%m.%Y') if ogrenci.kayit_tarihi else '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('ogrenciler.onkayit_detay', id=ogrenci.id) }}"
+                                class="btn btn-sm btn-info" title="Görüntüle">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('ogrenciler.onkayit_duzenle', id=ogrenci.id) }}"
+                                class="btn btn-sm btn-warning" title="Düzenle">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-success"
+                                onclick="aktifEt({{ ogrenci.id }}, '{{ ogrenci.adsoyad }}')" title="Aktif Yap">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger"
+                                onclick="silOnayla({{ ogrenci.id }}, '{{ ogrenci.adsoyad }}')" title="Sil">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="{{ url_for('ogrenciler.onkayit_liste', page=pagination.prev_num, search=search) }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('ogrenciler.onkayit_liste', page=page_num, search=search) }}">
+                        {{ page_num }}
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="{{ url_for('ogrenciler.onkayit_liste', page=pagination.next_num, search=search) }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Henüz ön kayıtlı öğrenci bulunmamaktadır.</p>
+            <a href="{{ url_for('ogrenciler.onkayit_ekle') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> İlk Ön Kaydı Ekle
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Sil Onay Formu (gizli) -->
+<form id="silForm" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+
+<!-- Aktif Et Formu (gizli) -->
+<form id="aktifEtForm" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+
+<script>
+    function silOnayla(id, adsoyad) {
+        if (confirm(`${adsoyad} isimli öğrenciyi ön kayıttan silmek istediğinize emin misiniz?`)) {
+            const form = document.getElementById('silForm');
+            form.action = `{{ url_for('ogrenciler.onkayit_liste') }}/${id}/sil`;
+            form.submit();
+        }
+    }
+
+    function aktifEt(id, adsoyad) {
+        if (confirm(`${adsoyad} isimli öğrenciyi aktif öğrenci yapmak istediğinize emin misiniz?`)) {
+            const form = document.getElementById('aktifEtForm');
+            form.action = `{{ url_for('ogrenciler.onkayit_liste') }}/${id}/aktif-et`;
+            form.submit();
+        }
+    }
+</script>
+{% endblock %}
