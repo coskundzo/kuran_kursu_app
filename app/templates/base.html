@@ -232,37 +232,48 @@
                 <div class="d-flex align-items-center gap-4">
 
                     <!-- Bildirim -->
-                    <div class="position-relative">
-                        <i class="bi bi-bell fs-4 text-white-50"></i>
+                    <a href="{{ url_for('ogrenciler.liste') }}" class="position-relative text-decoration-none"
+                        title="Yaklaşan Duyurular">
+                        <i class="bi bi-bell fs-4 text-white-50" style="cursor: pointer;"></i>
                         <span class="badge bg-danger position-absolute top-0 start-100 translate-middle p-1">1</span>
-                    </div>
+                    </a>
 
                     <!-- Mesaj -->
-                    <div class="position-relative">
-                        <i class="bi bi-chat-dots fs-4 text-white-50"></i>
+                    <a href="#" class="position-relative text-decoration-none" title="Bildirimler">
+                        <i class="bi bi-chat-dots fs-4 text-white-50" style="cursor: pointer;"></i>
                         <span class="badge bg-danger position-absolute top-0 start-100 translate-middle p-1">1</span>
-                    </div>
+                    </a>
 
                     <!-- Destek / Help -->
-                    <div class="position-relative">
-                        <i class="bi bi-life-preserver fs-4 text-white-50"></i>
+                    <a href="#" class="position-relative text-decoration-none" title="Açık Olan Destek Talepleri">
+                        <i class="bi bi-life-preserver fs-4 text-white-50" style="cursor: pointer;"></i>
                         <span class="badge bg-danger position-absolute top-0 start-100 translate-middle p-1">1</span>
-                    </div>
+                    </a>
 
                     <!-- Eğitim -->
-                    <i class="bi bi-mortarboard fs-4 text-white-50"></i>
+                    <a href="{{ url_for('ogrenciler.liste') }}" class="text-decoration-none" title="Öğrenciler">
+                        <i class="bi bi-mortarboard fs-4 text-white-50" style="cursor: pointer;"></i>
+                    </a>
 
                     <!-- Kullanıcılar -->
-                    <i class="bi bi-people fs-4 text-white-50"></i>
+                    <a href="{{ url_for('egitmenler.liste') }}" class="text-decoration-none" title="Eğitmenler">
+                        <i class="bi bi-people fs-4 text-white-50" style="cursor: pointer;"></i>
+                    </a>
 
                     <!-- Kitap / Ders Materyali -->
-                    <i class="bi bi-journal-text fs-4 text-white-50"></i>
+                    <a href="#" class="text-decoration-none" title="Rehber">
+                        <i class="bi bi-journal-text fs-4 text-white-50" style="cursor: pointer;"></i>
+                    </a>
 
                     <!-- Takvim -->
-                    <i class="bi bi-calendar-check fs-4 text-white-50"></i>
+                    <a href="#" class="text-decoration-none" title="Yoklama">
+                        <i class="bi bi-calendar-check fs-4 text-white-50" style="cursor: pointer;"></i>
+                    </a>
 
                     <!-- Ayarlar -->
-                    <i class="bi bi-gear fs-4 text-white-50"></i>
+                    <a href="#" class="text-decoration-none" title="Ayarlar">
+                        <i class="bi bi-gear fs-4 text-white-50" style="cursor: pointer;"></i>
+                    </a>
 
                     <!-- Ayırıcı ( | ) -->
                     <div class="text-white-50 fs-4">|</div>
@@ -272,7 +283,7 @@
                         class="rounded-circle">
 
                     <!-- Kullanıcı İsmi -->
-                    <span class="text-white fw-semibold">ismail</span>
+                    <span class="text-white fw-semibold" style="cursor: pointer;">ismail</span>
 
                 </div>
                         
