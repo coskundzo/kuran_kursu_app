@@ -44,6 +44,11 @@ class DersForm(FlaskForm):
     sinif_id = SelectField('Sınıf', coerce=lambda x: int(x) if x else None)
     egitmen_id = SelectField('Eğitmen', coerce=lambda x: int(x) if x else None)
     tur = StringField('Ders Türü')
-    konu = StringField('Konu')
-    aciklama = StringField('Açıklama')
     submit = SubmitField('Ders Ekle')
+
+class DersKonuForm(FlaskForm):
+    ders_id = SelectField('Ders Seçiniz', coerce=lambda x: int(x) if x else None, validators=[DataRequired()])
+    konu = StringField('Konu Adı', validators=[DataRequired()])
+    aciklama = StringField('Açıklama')
+    submit = SubmitField('Konu Ekle')
+

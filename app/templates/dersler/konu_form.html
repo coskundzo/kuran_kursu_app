@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Konu Ekle - E-Kuran Kursu Yönetim Sistemi{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="bi bi-plus-circle"></i> Derse Konu Ekle</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('dersler.konu_ekle') }}">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            <label for="ders_id" class="form-label">
+                                <i class="bi bi-journal-text"></i> Ders Seçiniz *
+                            </label>
+                            {{ form.ders_id(class="form-select") }}
+                            {% if form.ders_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.ders_id.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="konu" class="form-label">
+                                <i class="bi bi-list-ul"></i> Konu Adı *
+                            </label>
+                            {{ form.konu(class="form-control", placeholder="Örn: Kuran-ı Kerim Okuma, Tecvid
+                            Kuralları...") }}
+                            {% if form.konu.errors %}
+                            <div class="text-danger">
+                                {% for error in form.konu.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="aciklama" class="form-label">
+                                <i class="bi bi-card-text"></i> Açıklama
+                            </label>
+                            {{ form.aciklama(class="form-control", placeholder="Konu hakkında ek açıklama...") }}
+                            {% if form.aciklama.errors %}
+                            <div class="text-danger">
+                                {% for error in form.aciklama.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Konu Ekle
+                            </button>
+                            <a href="{{ url_for('dersler.konu_liste') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> İptal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-info-circle"></i> Bilgi</h5>
+                    <p class="card-text">
+                        Bu formdan seçtiğiniz derse yeni bir konu ekleyebilirsiniz.
+                    </p>
+                    <hr>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success"></i> Ders seçimi zorunludur</li>
+                        <li><i class="bi bi-check text-success"></i> Konu adı girilmelidir</li>
+                        <li><i class="bi bi-check text-success"></i> Aynı derse birden fazla konu eklenebilir</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

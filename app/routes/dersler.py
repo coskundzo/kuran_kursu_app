@@ -83,8 +83,6 @@ def ekle():
             sinif_id=form.sinif_id.data if form.sinif_id.data else None,
             egitmen_id=form.egitmen_id.data if form.egitmen_id.data else None,
             tur=form.tur.data,
-            konu=form.konu.data,
-            aciklama=form.aciklama.data,
             tarih=datetime.today()
         )
         db.session.add(ders)
@@ -132,11 +130,310 @@ def duzenle(id):
         ders.sinif_id = form.sinif_id.data if form.sinif_id.data else None
         ders.egitmen_id = form.egitmen_id.data if form.egitmen_id.data else None
         ders.tur = form.tur.data
-        ders.konu = form.konu.data
-        ders.aciklama = form.aciklama.data
         
         db.session.commit()
         flash('Ders bilgileri güncellendi!', 'success')
         return redirect(url_for('dersler.detay', id=ders.id))
     
     return render_template('dersler/form.html', form=form, ders=ders)
+
+
+@bp.route('/secili')
+@login_required
+def secili_liste():
+    """Seçili dersler listesi"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
+    query = Ders.query.filter_by(tur='secili')
+
+    # Arama
+    search = request.args.get('search', '')
+    if search:
+        query = query.filter(
+            db.or_(
+                Ders.adi.like(f'%{search}%'),
+                Ders.konu.like(f'%{search}%')
+            )
+        )
+
+    # Sıralama
+    query = query.order_by(Ders.tarih.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    dersler = pagination.items
+
+    return render_template('dersler/liste.html',
+                           dersler=dersler,
+                           pagination=pagination,
+                           search=search,
+                           title='Seçili Dersler')
+
+
+@bp.route('/ozel')
+@login_required
+def ozel_liste():
+    """Özel dersler listesi"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
+    query = Ders.query.filter_by(tur='ozel')
+
+    # Arama
+    search = request.args.get('search', '')
+    if search:
+        query = query.filter(
+            db.or_(
+                Ders.adi.like(f'%{search}%'),
+                Ders.konu.like(f'%{search}%')
+            )
+        )
+
+    # Sıralama
+    query = query.order_by(Ders.tarih.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    dersler = pagination.items
+
+    return render_template('dersler/liste.html',
+                           dersler=dersler,
+                           pagination=pagination,
+                           search=search,
+                           title='Özel Dersler')
+
+
+@bp.route('/konular')
+@login_required
+def konu_liste():
+    """Ders konuları listesi"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
+    # Tüm derslerdeki benzersiz konuları al
+    konular_query = db.session.query(Ders.konu).filter(Ders.konu.isnot(None), Ders.konu != '').distinct()
+    
+    # Arama
+    search = request.args.get('search', '')
+    if search:
+        konular_query = konular_query.filter(Ders.konu.like(f'%{search}%'))
+
+    konular_query = konular_query.order_by(Ders.konu)
+    
+    # Sayfalama için konuları listeye çevir
+    tum_konular = [k[0] for k in konular_query.all()]
+    total = len(tum_konular)
+    start = (page - 1) * per_page
+    end = start + per_page
+    konular = tum_konular[start:end]
+    
+    # Pagination objesi oluştur (manuel)
+    class SimplePagination:
+        def __init__(self, page, per_page, total):
+            self.page = page
+            self.per_page = per_page
+            self.total = total
+            self.pages = (total + per_page - 1) // per_page
+            self.has_prev = page > 1
+            self.has_next = page < self.pages
+            self.prev_num = page - 1 if self.has_prev else None
+            self.next_num = page + 1 if self.has_next else None
+    
+    pagination = SimplePagination(page, per_page, total)
+
+    return render_template('dersler/konular.html',
+                           konular=konular,
+                           pagination=pagination,
+                           search=search)
+
+
+@bp.route('/konu/ekle', methods=['GET', 'POST'])
+@login_required
+def konu_ekle():
+    """Derse konu ekle"""
+    from app.forms import DersKonuForm
+    
+    form = DersKonuForm()
+    
+    # Ders seçeneklerini yükle
+    dersler = Ders.query.order_by(Ders.adi).all()
+    form.ders_id.choices = [(d.id, d.adi) for d in dersler]
+    
+    if form.validate_on_submit():
+        ders = Ders.query.get_or_404(form.ders_id.data)
+        
+        # Dersin mevcut konusunu güncelle veya ekle
+        if ders.konu:
+            # Eğer derse zaten konu varsa, yeni konu ekle (virgülle ayır)
+            if form.konu.data not in ders.konu:
+                ders.konu = ders.konu + ', ' + form.konu.data
+        else:
+            ders.konu = form.konu.data
+        
+        if form.aciklama.data:
+            if ders.aciklama:
+                ders.aciklama = ders.aciklama + ' | ' + form.aciklama.data
+            else:
+                ders.aciklama = form.aciklama.data
+        
+        db.session.commit()
+        flash(f'"{form.konu.data}" konusu "{ders.adi}" dersine eklendi!', 'success')
+        return redirect(url_for('dersler.konu_liste'))
+    
+    return render_template('dersler/konu_form.html', form=form)
+
+
+@bp.route('/hafizlik')
+@login_required
+def hafizlik_liste():
+    """Hafızlık dersleri listesi"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
+    query = Ders.query.filter_by(tur='hafizlik')
+
+    # Arama
+    search = request.args.get('search', '')
+    if search:
+        query = query.filter(
+            db.or_(
+                Ders.adi.like(f'%{search}%'),
+                Ders.konu.like(f'%{search}%')
+            )
+        )
+
+    # Sıralama
+    query = query.order_by(Ders.tarih.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    dersler = pagination.items
+
+    return render_template('dersler/liste.html',
+                           dersler=dersler,
+                           pagination=pagination,
+                           search=search,
+                           title='Hafızlık Dersleri')
+
+
+@bp.route('/hafizlik-dinleme')
+@login_required
+def hafizlik_dinleme_liste():
+    """Hafızlık ders dinleme listesi"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
+    query = Ders.query.filter_by(tur='hafizlik_dinleme')
+
+    # Arama
+    search = request.args.get('search', '')
+    if search:
+        query = query.filter(
+            db.or_(
+                Ders.adi.like(f'%{search}%'),
+                Ders.konu.like(f'%{search}%')
+            )
+        )
+
+    # Sıralama
+    query = query.order_by(Ders.tarih.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    dersler = pagination.items
+
+    return render_template('dersler/liste.html',
+                           dersler=dersler,
+                           pagination=pagination,
+                           search=search,
+                           title='Hafızlık Ders Dinleme')
+
+
+@bp.route('/yuzune')
+@login_required
+def yuzune_liste():
+    """Yüzüne dersleri listesi"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
+    query = Ders.query.filter_by(tur='yuzune')
+
+    # Arama
+    search = request.args.get('search', '')
+    if search:
+        query = query.filter(
+            db.or_(
+                Ders.adi.like(f'%{search}%'),
+                Ders.konu.like(f'%{search}%')
+            )
+        )
+
+    # Sıralama
+    query = query.order_by(Ders.tarih.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    dersler = pagination.items
+
+    return render_template('dersler/liste.html',
+                           dersler=dersler,
+                           pagination=pagination,
+                           search=search,
+                           title='Yüzüne Dersleri')
+
+
+@bp.route('/yuzune-oncesi')
+@login_required
+def yuzune_oncesi_liste():
+    """Yüzüne öncesi dersleri listesi"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
+    query = Ders.query.filter_by(tur='yuzune_oncesi')
+
+    # Arama
+    search = request.args.get('search', '')
+    if search:
+        query = query.filter(
+            db.or_(
+                Ders.adi.like(f'%{search}%'),
+                Ders.konu.like(f'%{search}%')
+            )
+        )
+
+    # Sıralama
+    query = query.order_by(Ders.tarih.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    dersler = pagination.items
+
+    return render_template('dersler/liste.html',
+                           dersler=dersler,
+                           pagination=pagination,
+                           search=search,
+                           title='Yüzüne Öncesi Dersleri')
+
+
+@bp.route('/performans')
+@login_required
+def performans_liste():
+    """Öğrenci performansları listesi"""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
+    # Öğrenci bazlı ders performanslarını al
+    from app.models.ogrenci import Ogrenci
+    
+    query = Ogrenci.query.filter_by(aktif=True)
+
+    # Arama
+    search = request.args.get('search', '')
+    if search:
+        query = query.filter(Ogrenci.adsoyad.like(f'%{search}%'))
+
+    # Sıralama
+    query = query.order_by(Ogrenci.adsoyad)
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    ogrenciler = pagination.items
+
+    return render_template('dersler/performans.html',
+                           ogrenciler=ogrenciler,
+                           pagination=pagination,
+                           search=search)
