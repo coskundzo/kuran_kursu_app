@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Sınıflar - E-Kuran Kursu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2><i class="fas fa-school"></i> Sınıflar</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('siniflar.ekle') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Yeni Sınıf Ekle
+        </a>
+    </div>
+</div>
+
+<!-- Filtreler -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('siniflar.liste') }}" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Sınıf adı veya kodu ile ara..."
+                    value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="tur" class="form-select">
+                    <option value="">Tüm Türler</option>
+                    <option value="Hafızlık" {% if tur == 'Hafızlık' %}selected{% endif %}>Hafızlık</option>
+                    <option value="Tecvid" {% if tur == 'Tecvid' %}selected{% endif %}>Tecvid</option>
+                    <option value="Yüzüne" {% if tur == 'Yüzüne' %}selected{% endif %}>Yüzüne</option>
+                    <option value="Özel" {% if tur == 'Özel' %}selected{% endif %}>Özel</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="durum" class="form-select">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="aktif" {% if durum == 'aktif' %}selected{% endif %}>Aktif</option>
+                    <option value="pasif" {% if durum == 'pasif' %}selected{% endif %}>Pasif</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Ara
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sınıf Listesi -->
+<div class="card">
+    <div class="card-body">
+        {% if siniflar %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Sınıf Adı</th>
+                        <th>Kod</th>
+                        <th>Tür</th>
+                        <th>Seviye</th>
+                        <th>Eğitmen</th>
+                        <th>Öğrenci</th>
+                        <th>Kontenjan</th>
+                        <th>Doluluk</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sinif in siniflar %}
+                    <tr>
+                        <td>{{ sinif.adi }}</td>
+                        <td>{{ sinif.kod or '-' }}</td>
+                        <td>{{ sinif.tur or '-' }}</td>
+                        <td>{{ sinif.seviye or '-' }}</td>
+                        <td>
+                            {% if sinif.egitmen %}
+                            <a href="{{ url_for('egitmenler.detay', id=sinif.egitmen.id) }}">
+                                {{ sinif.egitmen.adsoyad }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ sinif.mevcud_ogrenci_sayisi }}</td>
+                        <td>{{ sinif.kontenjan or '-' }}</td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar {% if sinif.doluluk_orani >= 90 %}bg-danger{% elif sinif.doluluk_orani >= 75 %}bg-warning{% else %}bg-success{% endif %}"
+                                    role="progressbar" style="width: {{ sinif.doluluk_orani }}%"
+                                    aria-valuenow="{{ sinif.doluluk_orani }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ sinif.doluluk_orani }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if sinif.aktif %}
+                            <span class="badge bg-success">Aktif</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Pasif</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('siniflar.detay', id=sinif.id) }}" class="btn btn-sm btn-info"
+                                title="Görüntüle">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('siniflar.duzenle', id=sinif.id) }}" class="btn btn-sm btn-warning"
+                                title="Düzenle">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('siniflar.sil', id=sinif.id) }}" class="btn btn-sm btn-danger"
+                                title="Sil">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sayfalama -->
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Sayfa navigasyonu" class="mt-3">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('siniflar.liste', page=pagination.prev_num, search=search, tur=tur, durum=durum) }}">Önceki</a>
+                </li>
+                {% endif %}
+
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('siniflar.liste', page=page_num, search=search, tur=tur, durum=durum) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('siniflar.liste', page=pagination.next_num, search=search, tur=tur, durum=durum) }}">Sonraki</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Henüz kayıtlı sınıf bulunmamaktadır.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

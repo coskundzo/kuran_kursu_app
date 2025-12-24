@@ -53,22 +53,3 @@ class Muftuluk(db.Model):
     
     def __repr__(self):
         return f'<Muftuluk {self.adi}>'
-
-
-class Sinif(db.Model):
-    """Sınıf Modeli"""
-    __tablename__ = 'siniflar'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    adi = db.Column(db.String(100), nullable=False)
-    kurs_id = db.Column(db.Integer, db.ForeignKey('kurslar.id'), nullable=False)
-    kapasite = db.Column(db.Integer)
-    
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    aktif = db.Column(db.Boolean, default=True)
-    
-    # Relationships
-    ogrenciler = db.relationship('Ogrenci', backref='sinif', lazy='dynamic')
-    
-    def __repr__(self):
-        return f'<Sinif {self.adi}>'

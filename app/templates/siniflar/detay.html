@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}{{ sinif.adi }} - Sınıf Detay{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="fas fa-school"></i> {{ sinif.adi }}</h2>
+            <div>
+                <a href="{{ url_for('siniflar.duzenle', id=sinif.id) }}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Düzenle
+                </a>
+                <a href="{{ url_for('siniflar.liste') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Geri
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Sol Kolon - Sınıf Bilgileri -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Genel Bilgiler</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">Sınıf Kodu</label>
+                    <p class="fw-bold">{{ sinif.kod or '-' }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Kurs</label>
+                    <p>{{ sinif.kurs.adi if sinif.kurs else '-' }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Eğitmen</label>
+                    <p>
+                        {% if sinif.egitmen %}
+                            <a href="{{ url_for('egitmenler.detay', id=sinif.egitmen.id) }}">
+                                {{ sinif.egitmen.adsoyad }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Atanmadı</span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Tür</label>
+                    <p><span class="badge bg-info">{{ sinif.tur or '-' }}</span></p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Seviye</label>
+                    <p>{{ sinif.seviye or '-' }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Durum</label>
+                    <p>
+                        {% if sinif.aktif %}
+                            <span class="badge bg-success">Aktif</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Pasif</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Ders Programı</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">Ders Günleri</label>
+                    <p>{{ sinif.ders_gunleri or '-' }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Ders Saati</label>
+                    <p>{{ sinif.ders_saati or '-' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-users"></i> Kontenjan Bilgisi</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">Mevcut Öğrenci</label>
+                    <p class="fs-4 fw-bold text-primary">{{ sinif.mevcud_ogrenci_sayisi }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Toplam Kontenjan</label>
+                    <p class="fs-5">{{ sinif.kontenjan }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Boş Kontenjan</label>
+                    <p class="fs-5 {% if sinif.bos_kontenjan > 0 %}text-success{% else %}text-danger{% endif %}">
+                        {{ sinif.bos_kontenjan }}
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-muted small">Doluluk Oranı</label>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar {% if sinif.doluluk_orani >= 90 %}bg-danger{% elif sinif.doluluk_orani >= 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ sinif.doluluk_orani }}%"
+                             aria-valuenow="{{ sinif.doluluk_orani }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ sinif.doluluk_orani }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sağ Kolon - Öğrenci Listesi -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-graduate"></i> 
+                    Sınıf Öğrencileri ({{ sinif.mevcud_ogrenci_sayisi }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if ogrenciler %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Ad Soyad</th>
+                                <th>TC</th>
+                                <th>Telefon</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ogrenci in ogrenciler %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    <a href="{{ url_for('ogrenciler.detay', id=ogrenci.id) }}">
+                                        {{ ogrenci.adsoyad }}
+                                    </a>
+                                </td>
+                                <td>{{ ogrenci.tc or '-' }}</td>
+                                <td>{{ ogrenci.telefon or '-' }}</td>
+                                <td>{{ ogrenci.kayit_tarihi.strftime('%d.%m.%Y') if ogrenci.kayit_tarihi else '-' }}</td>
+                                <td>
+                                    <a href="{{ url_for('ogrenciler.detay', id=ogrenci.id) }}" 
+                                       class="btn btn-sm btn-info" title="Detay">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Bu sınıfta henüz kayıtlı öğrenci bulunmamaktadır.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if sinif.aciklama %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-comment"></i> Açıklama</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ sinif.aciklama }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock"></i> Kayıt Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Oluşturulma:</strong> {{ sinif.created_at.strftime('%d.%m.%Y %H:%M') if sinif.created_at else '-' }}</p>
+                <p class="mb-0"><strong>Son Güncelleme:</strong> {{ sinif.updated_at.strftime('%d.%m.%Y %H:%M') if sinif.updated_at else '-' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

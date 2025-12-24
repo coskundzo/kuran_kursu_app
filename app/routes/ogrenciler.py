@@ -3,7 +3,8 @@ from flask_login import login_required, current_user
 from app import db
 from app.models.ogrenci import Ogrenci
 from app.models.egitmen import Egitmen
-from app.models.kurs import Sinif, Kurs
+from app.models.sinif import Sinif
+from app.models.kurs import Kurs
 from datetime import datetime
 
 bp = Blueprint('ogrenciler', __name__, url_prefix='/ogrenciler')

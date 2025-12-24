@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}{% if sinif %}Sınıf Düzenle{% else %}Yeni Sınıf{% endif %} - E-Kuran Kursu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>
+            <i class="fas fa-school"></i> 
+            {% if sinif %}Sınıf Düzenle: {{ sinif.adi }}{% else %}Yeni Sınıf Ekle{% endif %}
+        </h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="{% if sinif %}{{ url_for('siniflar.duzenle', id=sinif.id) }}{% else %}{{ url_for('siniflar.ekle') }}{% endif %}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="adi" class="form-label">Sınıf Adı <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="adi" name="adi" 
+                           value="{% if sinif %}{{ sinif.adi }}{% endif %}" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="kod" class="form-label">Sınıf Kodu</label>
+                    <input type="text" class="form-control" id="kod" name="kod" 
+                           value="{% if sinif %}{{ sinif.kod }}{% endif %}" 
+                           placeholder="Örn: 1A, HAF-01">
+                </div>
+            </div>
+
+            <div class="row">
+                {% if current_user.tur != 3 %}
+                <div class="col-md-6 mb-3">
+                    <label for="kurs_id" class="form-label">Kurs <span class="text-danger">*</span></label>
+                    <select class="form-select" id="kurs_id" name="kurs_id" required>
+                        <option value="">Seçiniz...</option>
+                        {% for kurs in kurslar %}
+                        <option value="{{ kurs.id }}" 
+                                {% if sinif and sinif.kurs_id == kurs.id %}selected{% endif %}>
+                            {{ kurs.adi }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <div class="col-md-6 mb-3">
+                    <label for="egitmen_id" class="form-label">Eğitmen</label>
+                    <select class="form-select" id="egitmen_id" name="egitmen_id">
+                        <option value="">Seçiniz...</option>
+                        {% for egitmen in egitmenler %}
+                        <option value="{{ egitmen.id }}" 
+                                {% if sinif and sinif.egitmen_id == egitmen.id %}selected{% endif %}>
+                            {{ egitmen.adsoyad }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="tur" class="form-label">Sınıf Türü</label>
+                    <select class="form-select" id="tur" name="tur">
+                        <option value="">Seçiniz...</option>
+                        <option value="Hafızlık" {% if sinif and sinif.tur == 'Hafızlık' %}selected{% endif %}>Hafızlık</option>
+                        <option value="Tecvid" {% if sinif and sinif.tur == 'Tecvid' %}selected{% endif %}>Tecvid</option>
+                        <option value="Yüzüne" {% if sinif and sinif.tur == 'Yüzüne' %}selected{% endif %}>Yüzüne</option>
+                        <option value="Özel" {% if sinif and sinif.tur == 'Özel' %}selected{% endif %}>Özel</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="seviye" class="form-label">Seviye</label>
+                    <select class="form-select" id="seviye" name="seviye">
+                        <option value="">Seçiniz...</option>
+                        <option value="Başlangıç" {% if sinif and sinif.seviye == 'Başlangıç' %}selected{% endif %}>Başlangıç</option>
+                        <option value="Orta" {% if sinif and sinif.seviye == 'Orta' %}selected{% endif %}>Orta</option>
+                        <option value="İleri" {% if sinif and sinif.seviye == 'İleri' %}selected{% endif %}>İleri</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="kontenjan" class="form-label">Kontenjan <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="kontenjan" name="kontenjan" 
+                           value="{% if sinif %}{{ sinif.kontenjan }}{% else %}15{% endif %}" 
+                           min="1" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="ders_gunleri" class="form-label">Ders Günleri</label>
+                    <input type="text" class="form-control" id="ders_gunleri" name="ders_gunleri" 
+                           value="{% if sinif %}{{ sinif.ders_gunleri }}{% endif %}" 
+                           placeholder="Örn: Pazartesi, Çarşamba, Cuma">
+                    <small class="text-muted">Birden fazla gün için virgülle ayırın</small>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="ders_saati" class="form-label">Ders Saati</label>
+                    <input type="text" class="form-control" id="ders_saati" name="ders_saati" 
+                           value="{% if sinif %}{{ sinif.ders_saati }}{% endif %}" 
+                           placeholder="Örn: 09:00-11:00">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="aciklama" class="form-label">Açıklama</label>
+                <textarea class="form-control" id="aciklama" name="aciklama" rows="3">{% if sinif %}{{ sinif.aciklama }}{% endif %}</textarea>
+            </div>
+
+            {% if sinif %}
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="aktif" name="aktif" 
+                       value="1" {% if sinif.aktif %}checked{% endif %}>
+                <label class="form-check-label" for="aktif">
+                    Sınıf Aktif
+                </label>
+            </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('siniflar.liste') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> İptal
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

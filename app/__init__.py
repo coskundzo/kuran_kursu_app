@@ -39,7 +39,7 @@ def create_app(config_name=None):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
     # Register blueprints
-    from app.routes import auth, main, ogrenciler, egitmenler, dersler, aidat
+    from app.routes import auth, main, ogrenciler, egitmenler, dersler, aidat, siniflar
     
     app.register_blueprint(auth.bp)
     app.register_blueprint(main.bp)
@@ -47,6 +47,7 @@ def create_app(config_name=None):
     app.register_blueprint(egitmenler.bp)
     app.register_blueprint(dersler.bp)
     app.register_blueprint(aidat.bp)
+    app.register_blueprint(siniflar.bp)
     
     # Register error handlers
     register_error_handlers(app)
@@ -57,14 +58,15 @@ def create_app(config_name=None):
     # Shell context for flask cli
     @app.shell_context_processor
     def make_shell_context():
-        from app.models import User, Ogrenci, Egitmen, Ders, Kurs
+        from app.models import User, Ogrenci, Egitmen, Ders, Kurs, Sinif
         return {
             'db': db,
             'User': User,
             'Ogrenci': Ogrenci,
             'Egitmen': Egitmen,
             'Ders': Ders,
-            'Kurs': Kurs
+            'Kurs': Kurs,
+            'Sinif': Sinif
         }
     
     return app
