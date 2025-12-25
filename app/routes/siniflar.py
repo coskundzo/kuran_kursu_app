@@ -176,30 +176,31 @@ def duzenle(id):
 @bp.route('/<int:id>/sil', methods=['POST'])
 @login_required
 def sil(id):
-    """Sınıf sil (soft delete)"""
+    """Sınıf sil (hard delete)"""
     sinif = Sinif.query.get_or_404(id)
     
     # Yetki kontrolü
     if current_user.tur == 3 and sinif.kurs_id != current_user.kaynak_id:
-        return jsonify({'success': False, 'message': 'Bu sınıfı silme yetkiniz yok!'}), 403
+        flash('Bu sınıfı silme yetkiniz yok!', 'danger')
+        return redirect(url_for('siniflar.liste'))
     
     # Eğer sınıfta öğrenci varsa silme
     if sinif.mevcud_ogrenci_sayisi > 0:
-        return jsonify({
-            'success': False,
-            'message': 'Sınıfta aktif öğrenci bulunduğu için silinemez!'
-        }), 400
+        flash('Sınıfta aktif öğrenci bulunduğu için silinemez!', 'danger')
+        return redirect(url_for('siniflar.liste'))
     
     try:
-        sinif.aktif = False
+        sinif_adi = sinif.adi
+        db.session.delete(sinif)
         db.session.commit()
         
-        flash('Sınıf başarıyla silindi!', 'success')
-        return jsonify({'success': True, 'redirect': url_for('siniflar.liste')})
+        flash(f'{sinif_adi} sınıfı başarıyla silindi!', 'success')
+        return redirect(url_for('siniflar.liste'))
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 500
+        flash(f'Hata: {str(e)}', 'danger')
+        return redirect(url_for('siniflar.liste'))
 
 
 @bp.route('/api/siniflar/<int:kurs_id>')

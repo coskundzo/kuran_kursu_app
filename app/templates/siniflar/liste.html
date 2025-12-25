@@ -110,10 +110,10 @@
                                 title="Düzenle">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{{ url_for('siniflar.sil', id=sinif.id) }}" class="btn btn-sm btn-danger"
-                                title="Sil">
+                            <button onclick="sinifSil({{ sinif.id }}, '{{ sinif.adi }}')"
+                                class="btn btn-sm btn-danger" title="Sil">
                                 <i class="fas fa-trash-alt"></i>
-                            </a>
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -157,4 +157,19 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Sil Onay Formu (gizli) -->
+<form id="silForm" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+</form>
+
+<script>
+function sinifSil(id, adi) {
+    if (confirm(`'${adi}' sınıfını silmek istediğinize emin misiniz?\n\nNot: Sadece içinde aktif öğrenci bulunmayan sınıflar silinebilir.`)) {
+        const form = document.getElementById('silForm');
+        form.action = `/siniflar/${id}/sil`;
+        form.submit();
+    }
+}
+</script>
 {% endblock %}
