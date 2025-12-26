@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{% if id is defined %}Toplantı Düzenle{% else %}Yeni Toplantı Ekle{% endif %}</h2>
+<form method="post">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.konu.label(class_="form-label") }}
+        {{ form.konu(class_="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.tarih.label(class_="form-label") }}
+        {{ form.tarih(class_="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.aciklama.label(class_="form-label") }}
+        {{ form.aciklama(class_="form-control") }}
+    </div>
+    {{ form.submit(class_="btn btn-success") }}
+    <a href="{{ url_for('toplantilar.liste') }}" class="btn btn-secondary">İptal</a>
+</form>
+{% endblock %}

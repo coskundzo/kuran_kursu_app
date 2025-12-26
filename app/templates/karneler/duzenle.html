@@ -1,0 +1,506 @@
+{% extends "base.html" %}
+
+{% block title %}{{ sablon.adi }} - Karne Düzenle{% endblock %}
+
+{% block extra_css %}
+<style>
+#karneCanvas {
+    border: 2px solid #ddd;
+    background-color: #fff;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: crosshair;
+    position: relative;
+}
+
+.karne-element {
+    position: absolute;
+    padding: 5px;
+    border: 1px dashed #007bff;
+    background-color: rgba(255, 255, 255, 0.8);
+    cursor: move;
+    min-width: 100px;
+    user-select: none;
+}
+
+.karne-element:hover {
+    border: 2px solid #007bff;
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.karne-element.selected {
+    border: 2px solid #28a745;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+.karne-element .delete-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+}
+
+.karne-element:hover .delete-btn {
+    display: block;
+}
+
+.toolbar {
+    position: sticky;
+    top: 10px;
+    z-index: 100;
+}
+
+.variable-item, .ders-item {
+    cursor: pointer;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.variable-item:hover, .ders-item:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+    transform: translateX(5px);
+}
+
+.properties-panel {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="fas fa-edit"></i> {{ sablon.adi }}</h2>
+            <div>
+                <button onclick="kaydet()" class="btn btn-success">
+                    <i class="fas fa-save"></i> Değişiklikleri Kaydet
+                </button>
+                <a href="{{ url_for('karneler.liste') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Geri
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Sol Panel - Araçlar -->
+    <div class="col-md-3">
+        <div class="toolbar">
+            <!-- Şablon Bilgileri -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> Şablon Bilgileri</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        
+                        <div class="mb-2">
+                            <label class="form-label small">Şablon Adı</label>
+                            <input type="text" name="adi" class="form-control form-control-sm" 
+                                   value="{{ sablon.adi }}">
+                        </div>
+                        
+                        <div class="mb-2">
+                            <label class="form-label small">Arkaplan</label>
+                            <input type="file" name="arkaplan" class="form-control form-control-sm" 
+                                   accept="image/*,.pdf">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="form-label small">Genişlik</label>
+                                <input type="number" name="genislik" class="form-control form-control-sm" 
+                                       value="{{ sablon.genislik }}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">Yükseklik</label>
+                                <input type="number" name="yukseklik" class="form-control form-control-sm" 
+                                       value="{{ sablon.yukseklik }}">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-sm btn-primary w-100 mt-2">
+                            <i class="fas fa-save"></i> Güncelle
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Değişkenler -->
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-database"></i> Değişkenler</h6>
+                </div>
+                <div class="card-body p-2" style="max-height: 300px; overflow-y: auto;">
+                    {% for degisken in degiskenler %}
+                    <div class="variable-item" data-tip="degisken" data-anahtar="{{ degisken.kod }}" data-adi="{{ degisken.ad }}">
+                        <i class="fas fa-tag fa-sm"></i> {{ degisken.ad }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Dersler -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="fas fa-book"></i> Dersler</h6>
+                </div>
+                <div class="card-body p-2" style="max-height: 300px; overflow-y: auto;">
+                    {% for ders in dersler %}
+                    <div class="ders-item" data-tip="ders" data-anahtar="{{ ders.id }}" data-adi="{{ ders.adi }}">
+                        <i class="fas fa-graduation-cap fa-sm"></i> {{ ders.adi }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Orta Panel - Canvas -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <div id="karneCanvas" 
+                     style="width: {{ sablon.genislik }}px; height: {{ sablon.yukseklik }}px; margin: 0 auto; {% if sablon.arkaplan %}background-image: url('{{ url_for('static', filename='uploads/' + sablon.arkaplan) }}');{% endif %}">
+                    
+                    {% for eleman in elemanlar %}
+                    <div class="karne-element" 
+                         data-id="{{ eleman.id }}"
+                         data-tip="{{ eleman.tip }}"
+                         data-anahtar="{{ eleman.anahtar }}"
+                         style="left: {{ eleman.x }}px; top: {{ eleman.y }}px; 
+                                font-size: {{ eleman.font_boyut }}px; 
+                                color: {{ eleman.font_renk }}; 
+                                font-weight: {{ 'bold' if 'bold' in eleman.font_stili else 'normal' }};
+                                font-style: {{ 'italic' if 'italic' in eleman.font_stili else 'normal' }};
+                                text-align: {{ eleman.hizalama }};
+                                width: {{ eleman.genislik }}px;">
+                        {% if eleman.tip == 'degisken' %}
+                            {{ dict(degiskenler|map(attribute='kod')|zip(degiskenler|map(attribute='ad')))[eleman.anahtar] }}
+                        {% elif eleman.tip == 'ders' %}
+                            {% set ders = dersler|selectattr('id', 'equalto', eleman.anahtar|int)|first %}
+                            {{ ders.adi if ders else 'Ders' }}
+                        {% elif eleman.tip == 'sabit_metin' %}
+                            {{ eleman.metin }}
+                        {% endif %}
+                        <button class="delete-btn" onclick="elemanSil({{ eleman.id }})">&times;</button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sağ Panel - Özellikler -->
+    <div class="col-md-3">
+        <div class="toolbar">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-sliders-h"></i> Özellikler</h6>
+                </div>
+                <div class="card-body">
+                    <div id="propertiesPanel" class="properties-panel">
+                        <p class="text-muted text-center">
+                            <i class="fas fa-hand-pointer"></i><br>
+                            Bir eleman seçin
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedElement = null;
+let isDragging = false;
+let startX, startY, offsetX, offsetY;
+
+// Değişken ve ders listelerinden tıklayınca canvas'a ekleme
+document.querySelectorAll('.variable-item, .ders-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const tip = this.dataset.tip;
+        const anahtar = this.dataset.anahtar;
+        const adi = this.dataset.adi;
+        
+        console.log('Eleman ekleniyor:', { tip, anahtar, adi });
+        
+        // Canvas'ın merkezine ekle
+        const canvas = document.getElementById('karneCanvas');
+        const x = Math.floor(canvas.offsetWidth / 2) - 100;
+        const y = Math.floor(canvas.offsetHeight / 2) - 20;
+        
+        elemanEkle(tip, anahtar, adi, x, y);
+    });
+});
+
+// Yeni eleman ekleme
+function elemanEkle(tip, anahtar, metin, x, y) {
+    console.log('Fetch isteği gönderiliyor:', { tip, anahtar, metin, x, y });
+    
+    fetch(`{{ url_for('karneler.eleman_ekle', id=sablon.id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            tip: tip,
+            anahtar: anahtar,
+            metin: metin,
+            x: x,
+            y: y
+        })
+    })
+    .then(response => {
+        console.log('Response alındı:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Data:', data);
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Hata: ' + (data.message || 'Bilinmeyen hata'));
+        }
+    })
+    .catch(error => {
+        console.error('Hata:', error);
+        alert('Bir hata oluştu: ' + error);
+    });
+}
+
+// Elemanları sürükleyebilir yap
+document.querySelectorAll('.karne-element').forEach(element => {
+    element.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('delete-btn')) return;
+        
+        isDragging = true;
+        selectedElement = this;
+        
+        // Önceki seçimi kaldır
+        document.querySelectorAll('.karne-element').forEach(el => el.classList.remove('selected'));
+        this.classList.add('selected');
+        
+        // Özellikler panelini güncelle
+        guncellePaneli(this);
+        
+        const rect = this.getBoundingClientRect();
+        const canvasRect = document.getElementById('karneCanvas').getBoundingClientRect();
+        
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        
+        e.preventDefault();
+    });
+});
+
+document.addEventListener('mousemove', function(e) {
+    if (!isDragging || !selectedElement) return;
+    
+    const canvas = document.getElementById('karneCanvas');
+    const canvasRect = canvas.getBoundingClientRect();
+    
+    let newX = e.clientX - canvasRect.left - offsetX;
+    let newY = e.clientY - canvasRect.top - offsetY;
+    
+    // Canvas sınırları içinde tut
+    newX = Math.max(0, Math.min(newX, canvas.offsetWidth - selectedElement.offsetWidth));
+    newY = Math.max(0, Math.min(newY, canvas.offsetHeight - selectedElement.offsetHeight));
+    
+    selectedElement.style.left = newX + 'px';
+    selectedElement.style.top = newY + 'px';
+});
+
+document.addEventListener('mouseup', function() {
+    if (isDragging && selectedElement) {
+        // Pozisyonu kaydet
+        const id = selectedElement.dataset.id;
+        const x = parseInt(selectedElement.style.left);
+        const y = parseInt(selectedElement.style.top);
+        
+        elemanGuncelle(id, { x, y });
+    }
+    
+    isDragging = false;
+});
+
+// Özellikler panelini güncelle
+function guncellePaneli(element) {
+    const id = element.dataset.id;
+    const tip = element.dataset.tip;
+    const x = parseInt(element.style.left);
+    const y = parseInt(element.style.top);
+    const fontSize = parseInt(element.style.fontSize);
+    const color = element.style.color || '#000000';
+    const fontWeight = element.style.fontWeight || 'normal';
+    const fontStyle = element.style.fontStyle || 'normal';
+    const textAlign = element.style.textAlign || 'left';
+    const width = parseInt(element.style.width);
+    
+    const panel = document.getElementById('propertiesPanel');
+    panel.innerHTML = `
+        <div class="mb-2">
+            <label class="form-label small mb-1">Konum X</label>
+            <input type="number" class="form-control form-control-sm" value="${x}" 
+                   onchange="updateProperty('x', this.value)">
+        </div>
+        <div class="mb-2">
+            <label class="form-label small mb-1">Konum Y</label>
+            <input type="number" class="form-control form-control-sm" value="${y}" 
+                   onchange="updateProperty('y', this.value)">
+        </div>
+        <div class="mb-2">
+            <label class="form-label small mb-1">Genişlik</label>
+            <input type="number" class="form-control form-control-sm" value="${width}" 
+                   onchange="updateProperty('genislik', this.value)">
+        </div>
+        <div class="mb-2">
+            <label class="form-label small mb-1">Font Boyutu</label>
+            <input type="number" class="form-control form-control-sm" value="${fontSize}" 
+                   onchange="updateProperty('font_boyut', this.value)">
+        </div>
+        <div class="mb-2">
+            <label class="form-label small mb-1">Renk</label>
+            <input type="color" class="form-control form-control-sm" value="${rgbToHex(color)}" 
+                   onchange="updateProperty('font_renk', this.value)">
+        </div>
+        <div class="mb-2">
+            <label class="form-label small mb-1">Stil</label>
+            <div class="btn-group btn-group-sm w-100" role="group">
+                <input type="checkbox" class="btn-check" id="bold-${id}" 
+                       ${fontWeight === 'bold' ? 'checked' : ''}
+                       onchange="updateStyle('bold', this.checked)">
+                <label class="btn btn-outline-secondary" for="bold-${id}">
+                    <i class="fas fa-bold"></i>
+                </label>
+                
+                <input type="checkbox" class="btn-check" id="italic-${id}" 
+                       ${fontStyle === 'italic' ? 'checked' : ''}
+                       onchange="updateStyle('italic', this.checked)">
+                <label class="btn btn-outline-secondary" for="italic-${id}">
+                    <i class="fas fa-italic"></i>
+                </label>
+            </div>
+        </div>
+        <div class="mb-2">
+            <label class="form-label small mb-1">Hizalama</label>
+            <select class="form-select form-select-sm" 
+                    onchange="updateProperty('hizalama', this.value)">
+                <option value="left" ${textAlign === 'left' ? 'selected' : ''}>Sol</option>
+                <option value="center" ${textAlign === 'center' ? 'selected' : ''}>Orta</option>
+                <option value="right" ${textAlign === 'right' ? 'selected' : ''}>Sağ</option>
+            </select>
+        </div>
+        <button class="btn btn-danger btn-sm w-100 mt-2" onclick="elemanSil(${id})">
+            <i class="fas fa-trash"></i> Sil
+        </button>
+    `;
+}
+
+function updateProperty(property, value) {
+    if (!selectedElement) return;
+    
+    const id = selectedElement.dataset.id;
+    const data = {};
+    data[property] = property === 'font_boyut' || property === 'x' || property === 'y' || property === 'genislik' 
+                     ? parseInt(value) : value;
+    
+    elemanGuncelle(id, data);
+    
+    // Görsel güncelleme
+    if (property === 'x') selectedElement.style.left = value + 'px';
+    else if (property === 'y') selectedElement.style.top = value + 'px';
+    else if (property === 'font_boyut') selectedElement.style.fontSize = value + 'px';
+    else if (property === 'font_renk') selectedElement.style.color = value;
+    else if (property === 'hizalama') selectedElement.style.textAlign = value;
+    else if (property === 'genislik') selectedElement.style.width = value + 'px';
+}
+
+function updateStyle(type, checked) {
+    if (!selectedElement) return;
+    
+    const id = selectedElement.dataset.id;
+    
+    if (type === 'bold') {
+        selectedElement.style.fontWeight = checked ? 'bold' : 'normal';
+        elemanGuncelle(id, { font_stili: checked ? 'bold' : 'normal' });
+    } else if (type === 'italic') {
+        selectedElement.style.fontStyle = checked ? 'italic' : 'normal';
+        elemanGuncelle(id, { font_stili: checked ? 'italic' : 'normal' });
+    }
+}
+
+function elemanGuncelle(id, data) {
+    fetch(`/karneler/eleman/${id}/guncelle`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Hata: ' + data.message);
+        }
+    });
+}
+
+function elemanSil(id) {
+    if (!confirm('Bu elemanı silmek istediğinize emin misiniz?')) return;
+    
+    fetch(`/karneler/eleman/${id}/sil`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Hata: ' + data.message);
+        }
+    });
+}
+
+function rgbToHex(rgb) {
+    if (rgb.startsWith('#')) return rgb;
+    
+    const result = rgb.match(/\d+/g);
+    if (!result) return '#000000';
+    
+    return '#' + result.map(x => {
+        const hex = parseInt(x).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    }).join('');
+}
+
+function kaydet() {
+    alert('Tüm değişiklikler otomatik olarak kaydedilmektedir.');
+}
+</script>
+{% endblock %}

@@ -43,6 +43,7 @@ class Egitmen(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
+    # kurs ilişkisi Kurs modelindeki backref='kurs' ile otomatik oluşturuluyor
     ogrenciler = db.relationship('Ogrenci', backref='egitmen', lazy='dynamic')
     dersler = db.relationship('Ders', backref='egitmen', lazy='dynamic')
     

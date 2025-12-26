@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{% if sablon %}Şablon Düzenle{% else %}Yeni Şablon{% endif %} - E-Kuran Kursu{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2>
+            <i class="fas fa-id-card"></i>
+            {% if sablon %}{{ sablon.adi }} - Düzenle{% else %}Yeni Karne Şablonu{% endif %}
+        </h2>
+    </div>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-cog"></i> Temel Bilgiler</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Şablon Adı <span class="text-danger">*</span></label>
+                    <input type="text" name="adi" class="form-control" 
+                           value="{{ sablon.adi if sablon else '' }}" required>
+                </div>
+                
+                {% if not sablon or current_user.tur != 3 %}
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Kurs <span class="text-danger">*</span></label>
+                    <select name="kurs_id" class="form-select" required>
+                        <option value="">Seçiniz...</option>
+                        {% for kurs in kurslar %}
+                        <option value="{{ kurs.id }}" 
+                            {% if sablon and sablon.kurs_id == kurs.id %}selected{% endif %}>
+                            {{ kurs.adi }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Genişlik (px)</label>
+                    <input type="number" name="genislik" class="form-control" 
+                           value="{{ sablon.genislik if sablon else 800 }}" min="400" max="2000">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Yükseklik (px)</label>
+                    <input type="number" name="yukseklik" class="form-control" 
+                           value="{{ sablon.yukseklik if sablon else 1131 }}" min="400" max="3000">
+                </div>
+                
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Arkaplan Resmi</label>
+                    <input type="file" name="arkaplan" class="form-control" accept="image/*,.pdf">
+                    <small class="text-muted">PNG, JPG, JPEG veya PDF formatında</small>
+                    
+                    {% if sablon and sablon.arkaplan %}
+                    <div class="mt-2">
+                        <small class="text-success">
+                            <i class="fas fa-check-circle"></i> Mevcut: {{ sablon.arkaplan }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Kaydet
+            </button>
+            <a href="{{ url_for('karneler.liste') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> İptal
+            </a>
+        </div>
+    </div>
+</form>
+
+{% endblock %}

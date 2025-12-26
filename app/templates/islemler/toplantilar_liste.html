@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Toplantılar</h2>
+<a href="{{ url_for('toplantilar.ekle') }}" class="btn btn-primary mb-3">Yeni Toplantı Ekle</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Konu</th>
+            <th>Tarih</th>
+            <th>Açıklama</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in toplantilar %}
+        <tr>
+            <td>{{ loop.index0 }}</td>
+            <td>{{ t.konu }}</td>
+            <td>{{ t.tarih }}</td>
+            <td>{{ t.aciklama }}</td>
+            <td>
+                <a href="{{ url_for('toplantilar.duzenle', id=loop.index0) }}" class="btn btn-sm btn-warning">Düzenle</a>
+                <form action="{{ url_for('toplantilar.sil', id=loop.index0) }}" method="post" style="display:inline-block;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">Henüz toplantı eklenmemiş.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

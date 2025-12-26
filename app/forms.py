@@ -1,5 +1,14 @@
 
 from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField, DateField
+from wtforms.validators import DataRequired, Email, Optional
+
+class ToplantiForm(FlaskForm):
+    konu = StringField('Konu', validators=[DataRequired()])
+    tarih = DateField('Tarih', format='%Y-%m-%d', validators=[DataRequired()])
+    aciklama = TextAreaField('Açıklama')
+    submit = SubmitField('Kaydet')
+from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Email, Optional
 

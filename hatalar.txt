@@ -1,3 +1,4 @@
 Hatalar
 1. Eğitmen sayfasında eğitmen ekle deyince hata verdi.
 2. The CSRF token is missing. öğrenci ekle kısmında ekle deyince token hatası veriyor.
+3. sınıf sil dediğimizde eğer içinde öğrenci vrasa silemezsiniz demesi gerekir. önce sınıfı boşatacak sonra silecejk.

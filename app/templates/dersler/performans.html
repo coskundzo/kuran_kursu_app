@@ -2,115 +2,450 @@
 
 {% block title %}Öğrenci Performansları - E-Kuran Kursu Yönetim Sistemi{% endblock %}
 
+{% block extra_css %}
+
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
-    <div class="row mb-4">
+    <!-- Header -->
+    <div class="row mb-3 no-print">
         <div class="col-md-12">
-            <h2><i class="bi bi-bar-chart-line-fill"></i> Öğrenci Performansları</h2>
-        </div>
-    </div>
-
-    <!-- Arama -->
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <form method="GET" action="{{ url_for('dersler.performans_liste') }}" class="d-flex">
-                <input type="text" name="search" class="form-control me-2" placeholder="Öğrenci ara..."
-                    value="{{ search if search else '' }}">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search"></i> Ara
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Öğrenci Listesi -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body">
-                    {% if ogrenciler %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Öğrenci Adı</th>
-                                    <th>TC No</th>
-                                    <th>Telefon</th>
-                                    <th>Toplam Ders</th>
-                                    <th>İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for ogrenci in ogrenciler %}
-                                <tr>
-                                    <td>{{ loop.index + (pagination.page - 1) * pagination.per_page }}</td>
-                                    <td>
-                                        <strong>{{ ogrenci.adsoyad }}</strong>
-                                    </td>
-                                    <td>{{ ogrenci.tc or '-' }}</td>
-                                    <td>{{ ogrenci.telefon or '-' }}</td>
-                                    <td>
-                                        <span class="badge bg-info">
-                                            {{ ogrenci.dersler|length if ogrenci.dersler else 0 }} Ders
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('ogrenciler.detay', id=ogrenci.id) }}"
-                                            class="btn btn-sm btn-info" title="Detayları Gör">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-success" title="Performans Raporu">
-                                            <i class="bi bi-file-bar-graph"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Sayfalama -->
-                    {% if pagination.pages > 1 %}
-                    <nav aria-label="Sayfa navigasyonu">
-                        <ul class="pagination justify-content-center">
-                            {% if pagination.has_prev %}
-                            <li class="page-item">
-                                <a class="page-link"
-                                    href="{{ url_for('dersler.performans_liste', page=pagination.prev_num, search=search) }}">
-                                    Önceki
-                                </a>
-                            </li>
-                            {% endif %}
-
-                            {% for page_num in range(1, pagination.pages + 1) %}
-                            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                                <a class="page-link"
-                                    href="{{ url_for('dersler.performans_liste', page=page_num, search=search) }}">
-                                    {{ page_num }}
-                                </a>
-                            </li>
-                            {% endfor %}
-
-                            {% if pagination.has_next %}
-                            <li class="page-item">
-                                <a class="page-link"
-                                    href="{{ url_for('dersler.performans_liste', page=pagination.next_num, search=search) }}">
-                                    Sonraki
-                                </a>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                    {% endif %}
-                    {% else %}
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> Aktif öğrenci bulunmamaktadır.
-                    </div>
-                    {% endif %}
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-bar-chart-line-fill"></i> Öğrenci Performansları <span class="badge bg-info">{{ tarih|gun_adi }} - {{ tarih.strftime('%d.%m.%Y') }}</span></h2>
+                <div>
+                    <button onclick="window.print()" class="btn btn-danger">
+                        <i class="bi bi-printer"></i> Yazdır
+                    </button>
+                    <button onclick="exportToExcel()" class="btn btn-success">
+                        <i class="bi bi-file-excel"></i> Excel
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Filtreler -->
+    <div class="row mb-3 no-print">
+        <div class="col-md-12">
+            <form method="GET" class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Veri Girişi</label>
+                    <select name="veri_turu" class="form-select" onchange="this.form.submit()">
+                        <option value="gunluk" {% if veri_turu == 'gunluk' %}selected{% endif %}>Günlük Veri Girişi</option>
+                        <option value="haftalik" {% if veri_turu == 'haftalik' %}selected{% endif %}>Haftalık Veri Girişi</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label">Kurs</label>
+                    <select name="kurs_id" class="form-select" onchange="this.form.submit()">
+                        <option value="">Tüm Kurslar</option>
+                        {% for kurs in kurslar %}
+                        <option value="{{ kurs.id }}" {% if kurs_id == kurs.id %}selected{% endif %}>
+                            {{ kurs.adi }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label">Sınıf</label>
+                    <select name="sinif_id" class="form-select" onchange="this.form.submit()">
+                        <option value="">Tüm Sınıflar</option>
+                        {% for sinif in siniflar %}
+                        <option value="{{ sinif.id }}" {% if sinif_id == sinif.id %}selected{% endif %}>
+                            {{ sinif.adi }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label">Tarih</label>
+                    <input type="date" name="tarih" class="form-control" 
+                           value="{{ tarih.strftime('%Y-%m-%d') }}" 
+                           onchange="this.form.submit()">
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" onclick="location.reload()" class="btn btn-primary d-block w-100">
+                        <i class="bi bi-arrow-clockwise"></i> Listele
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Performans Tablosu -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        {% if veri_turu == 'haftalik' %}
+                        <!-- HAFTALİK VERİ GİRİŞİ TABLOSU -->
+                        <table class="table table-bordered performans-table mb-0">
+                            <thead>
+                                <tr>
+                                    <!-- Ana Başlıklar -->
+                                    <th class="section-header" rowspan="3">Öğrenci Adı Soyadı</th>
+                                    <th class="section-header" rowspan="3">KANAAT NOTU</th>
+                                    <th class="section-header" rowspan="3">BOŞ DURUMU</th>
+                                    <th class="section-header" rowspan="3">HASTA</th>
+                                    <th colspan="4" class="section-header">DİSİPLİN SÜRECİ</th>
+                                    <th class="section-header" rowspan="3">SONUÇ</th>
+                                </tr>
+                                <tr>
+                                    <!-- Disiplin Alt Başlıkları -->
+                                    <th class="davranis-section">Sözlü Uyarı</th>
+                                    <th class="davranis-section">Yazılı Uyarı</th>
+                                    <th class="davranis-section">Kınama Cezası</th>
+                                    <th class="davranis-section">Uzaklaştırma Cezası</th>
+                                </tr>
+                                <!-- Puan Değeri Satırı -->
+                                <tr class="puan-degeri-row">
+                                    <td>İstekli, Azimli ve Gayretli Çalışma</td>
+                                    <td>Öğrencinin yaptığı boş tarım puan karşılığı</td>
+                                    <td>Öğrencinin hasta olduğu günlerde kullanacak puanı karşılığı</td>
+                                    <td>-5</td>
+                                    <td>-30</td>
+                                    <td>-40</td>
+                                    <td>-50</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="puan-degeri-row">
+                                    <td class="ogrenci-adi">PUAN DEĞERİ</td>
+                                    <td>20</td>
+                                    <td>-15</td>
+                                    <td>-5</td>
+                                    <td>-5</td>
+                                    <td>-30</td>
+                                    <td>-40</td>
+                                    <td>-50</td>
+                                    <td></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if ogrenciler %}
+                                    {% for ogrenci in ogrenciler %}
+                                    {% set perf = performans_data.get(ogrenci.id) %}
+                                    <tr class="ogrenci-row" data-ogrenci-id="{{ ogrenci.id }}">
+                                        <td class="ogrenci-adi">
+                                            {{ loop.index }}. {{ ogrenci.adsoyad }}
+                                        </td>
+                                        <!-- Kanaat Notu (20 puan) -->
+                                        <td><input type="number" min="0" max="20" class="perf-input" 
+                                                   name="ders_calisma_disiplini" 
+                                                   value="{{ perf.ders_calisma_disiplini if perf.id else 0 }}"></td>
+                                        
+                                        <!-- Boş Durumu (-15 puan) -->
+                                        <td><input type="number" min="-15" max="0" class="perf-input" 
+                                                   name="ders_verme_performansi" 
+                                                   value="{{ perf.ders_verme_performansi if perf.id else 0 }}"></td>
+                                        
+                                        <!-- Hasta (-5 puan) -->
+                                        <td><input type="number" min="-5" max="0" class="perf-input" 
+                                                   name="sistem_uygulanma_disiplini" 
+                                                   value="{{ perf.sistem_uygulanma_disiplini if perf.id else 0 }}"></td>
+                                        
+                                        <!-- Disiplin Süreci -->
+                                        <!-- Sözlü Uyarı (-5 puan) -->
+                                        <td><input type="number" min="-5" max="0" class="perf-input" 
+                                                   name="ders_okuyus_hizi" 
+                                                   value="{{ perf.ders_okuyus_hizi if perf.id else 0 }}"></td>
+                                        
+                                        <!-- Yazılı Uyarı (-30 puan) -->
+                                        <td><input type="number" min="-30" max="0" class="perf-input" 
+                                                   name="talim_tecvid_durumu" 
+                                                   value="{{ perf.talim_tecvid_durumu if perf.id else 0 }}"></td>
+                                        
+                                        <!-- Kınama Cezası (-40 puan) -->
+                                        <td><input type="number" min="-40" max="0" class="perf-input" 
+                                                   name="ders_verme_zamanlamasi" 
+                                                   value="{{ perf.ders_verme_zamanlamasi if perf.id else 0 }}"></td>
+                                        
+                                        <!-- Uzaklaştırma Cezası (-50 puan) -->
+                                        <td><input type="number" min="-50" max="0" class="perf-input" 
+                                                   name="sayfa_dinleme_disiplini" 
+                                                   value="{{ perf.sayfa_dinleme_disiplini if perf.id else 0 }}"></td>
+                                        
+                                        <!-- Sonuç -->
+                                        <td class="toplam-col toplam" data-toplam="sonuc">
+                                            {{ perf.toplam_puan() if perf.id else 0 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted py-5">
+                                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                            <p class="mt-2">Seçilen kriterlere uygun öğrenci bulunamadı.</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                        
+                        {% else %}
+                        <!-- GÜNLÜK VERİ GİRİŞİ TABLOSU -->
+                        <table class="table table-bordered performans-table mb-0">
+                            <thead>
+                                <tr>
+                                    <!-- Ana Başlıklar -->
+                                    <th class="section-header" rowspan="2">Öğrenci Adı Soyadı</th>
+                                    <th colspan="10" class="section-header">ÖĞRENCİ BAŞARI</th>
+                                    <th colspan="10" class="section-header">ÖĞRENCİ DAVRANIŞ</th>
+                                    <th class="section-header" rowspan="2">SONUÇ</th>
+                                </tr>
+                                <tr>
+                                    <!-- Başarı Kolonları -->
+                                    <th class="basari-section">Ders Çalışma Disiplini</th>
+                                    <th class="basari-section">Ders Verme Performansı</th>
+                                    <th class="basari-section">Sistem Uygulanma Disiplini</th>
+                                    <th class="basari-section">Ders Okuyuş Hızı, Talim-Tecvid Durumu</th>
+                                    <th class="basari-section">Ders Verme Zamanlaması</th>
+                                    <th class="basari-section">Sayfa Dinleme Disiplini</th>
+                                    <th class="basari-section">Kur'an Kültürüne Uyum</th>
+                                    <th class="basari-section">Hafta Başında Kurs Zamanlaması Giriş</th>
+                                    <th class="basari-section">Ders Saatlerinde Sınıfa Zamanlama (Mütalaa Vakitleri Dahil)</th>
+                                    <th class="basari-section">Ders Saatlerinde Ders Disiplini</th>
+                                    
+                                    <!-- Davranış Kolonları -->
+                                    <th class="davranis-section">Kültür Saatleri Ders Zamanlama Giriş</th>
+                                    <th class="davranis-section">Sınıf Hoca ile İletişim</th>
+                                    <th class="davranis-section">Arkadaşlarıyla İletişim</th>
+                                    <th class="davranis-section">Namaz Vakitlerinde Mescide Zamanlama Giriş</th>
+                                    <th class="davranis-section">İbadet Disiplini</th>
+                                    <th class="davranis-section">Kılıkyafet Disiplini</th>
+                                    <th class="davranis-section">Yeme-İçme Disiplini</th>
+                                    <th class="davranis-section">Yatalakhane Disiplini</th>
+                                    <th class="davranis-section">Kendini Yönetme Becerisi Temizlik ve Düzen</th>
+                                    <th class="davranis-section">Genel Disiplin</th>
+                                </tr>
+                                <!-- Puan Değeri Satırı -->
+                                <tr class="puan-degeri-row">
+                                    <td class="ogrenci-adi">PUAN DEĞERİ</td>
+                                    <td>12</td>
+                                    <td>18</td>
+                                    <td>12</td>
+                                    <td>12</td>
+                                    <td>6</td>
+                                    <td>18</td>
+                                    <td>10</td>
+                                    <td>2</td>
+                                    <td>2</td>
+                                    <td>2</td>
+                                    <td>2</td>
+                                    <td>4</td>
+                                    <td>2</td>
+                                    <td>2</td>
+                                    <td>2</td>
+                                    <td>2</td>
+                                    <td>2</td>
+                                    <td>2</td>
+                                    <td>10</td>
+                                    <td>6</td>
+                                    <td></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if ogrenciler %}
+                                    {% for ogrenci in ogrenciler %}
+                                    {% set perf = performans_data.get(ogrenci.id) %}
+                                    <tr class="ogrenci-row" data-ogrenci-id="{{ ogrenci.id }}">
+                                        <td class="ogrenci-adi">
+                                            {{ loop.index }}. {{ ogrenci.adsoyad }}
+                                        </td>
+                                        <!-- Başarı Puanları -->
+                                        <td><input type="number" min="0" max="12" class="perf-input" 
+                                                   name="ders_calisma_disiplini" 
+                                                   value="{{ perf.ders_calisma_disiplini if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="18" class="perf-input" 
+                                                   name="ders_verme_performansi" 
+                                                   value="{{ perf.ders_verme_performansi if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="12" class="perf-input" 
+                                                   name="sistem_uygulanma_disiplini" 
+                                                   value="{{ perf.sistem_uygulanma_disiplini if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="12" class="perf-input" 
+                                                   name="ders_okuyus_hizi" 
+                                                   value="{{ perf.ders_okuyus_hizi if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="6" class="perf-input" 
+                                                   name="talim_tecvid_durumu" 
+                                                   value="{{ perf.talim_tecvid_durumu if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="18" class="perf-input" 
+                                                   name="ders_verme_zamanlamasi" 
+                                                   value="{{ perf.ders_verme_zamanlamasi if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="10" class="perf-input" 
+                                                   name="sayfa_dinleme_disiplini" 
+                                                   value="{{ perf.sayfa_dinleme_disiplini if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="2" class="perf-input" 
+                                                   name="kuran_kulturune_uyum" 
+                                                   value="{{ perf.kuran_kulturune_uyum if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="2" class="perf-input" 
+                                                   name="hafta_basinda_kurs_zamanlamasi_giris" 
+                                                   value="{{ perf.hafta_basinda_kurs_zamanlamasi_giris if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="2" class="perf-input" 
+                                                   name="ders_saatlerinde_sinifa_zamanlama_giris_mutabaa_saatleri" 
+                                                   value="{{ perf.ders_saatlerinde_sinifa_zamanlama_giris_mutabaa_saatleri if perf.id else 0 }}"></td>
+                                        
+                                        <!-- Davranış Puanları -->
+                                        <td><input type="number" min="0" max="2" class="perf-input" 
+                                                   name="kultur_saatlari_ders_zamanlama_giris" 
+                                                   value="{{ perf.kultur_saatlari_ders_zamanlama_giris if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="4" class="perf-input" 
+                                                   name="sinif_hoca_ile_iletisim" 
+                                                   value="{{ perf.sinif_hoca_ile_iletisim if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="2" class="perf-input" 
+                                                   name="arkadaslariyla_iletisim" 
+                                                   value="{{ perf.arkadaslariyla_iletisim if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="2" class="perf-input" 
+                                                   name="namaz_vakitlerinde_mescide_zamanlama_giris" 
+                                                   value="{{ perf.namaz_vakitlerinde_mescide_zamanlama_giris if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="2" class="perf-input" 
+                                                   name="ibadet_disiplini" 
+                                                   value="{{ perf.ibadet_disiplini if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="2" class="perf-input" 
+                                                   name="kilkiyafet_disiplini" 
+                                                   value="{{ perf.kilkiyafet_disiplini if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="2" class="perf-input" 
+                                                   name="yeme_icme_disiplini" 
+                                                   value="{{ perf.yeme_icme_disiplini if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="2" class="perf-input" 
+                                                   name="yatalakhane_disiplini" 
+                                                   value="{{ perf.yatalakhane_disiplini if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="10" class="perf-input" 
+                                                   name="trafic_kontrolu_kendini_cikisine_becerisi_temizlik_ve_duzen" 
+                                                   value="{{ perf.trafic_kontrolu_kendini_cikisine_becerisi_temizlik_ve_duzen if perf.id else 0 }}"></td>
+                                        <td><input type="number" min="0" max="6" class="perf-input" 
+                                                   name="genel_disiplin" 
+                                                   value="{{ perf.genel_disiplin if perf.id else 0 }}"></td>
+                                        
+                                        <!-- Sonuç -->
+                                        <td class="toplam-col toplam" data-toplam="sonuc">
+                                            {{ perf.toplam_puan() if perf.id else 0 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="22" class="text-center text-muted py-5">
+                                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                            <p class="mt-2">Seçilen kriterlere uygun öğrenci bulunamadı.</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Kaydet Butonu -->
+    {% if ogrenciler %}
+    <div class="row mt-3 no-print">
+        <div class="col-12 text-center">
+            <button onclick="kaydetTumVeriler()" class="btn btn-success btn-lg">
+                <i class="bi bi-save"></i> Tüm Verileri Kaydet
+            </button>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<script>
+// Toplam hesapla
+function toplamHesapla(row) {
+    let toplam = 0;
+    const inputs = row.querySelectorAll('.perf-input');
+    inputs.forEach(input => {
+        toplam += parseInt(input.value) || 0;
+    });
+    
+    const sonucCell = row.querySelector('[data-toplam="sonuc"]');
+    if (sonucCell) {
+        sonucCell.textContent = toplam;
+    }
+}
+
+// Input değişikliklerini dinle
+document.querySelectorAll('.perf-input').forEach(input => {
+    input.addEventListener('change', function() {
+        const row = this.closest('tr');
+        toplamHesapla(row);
+    });
+});
+
+// Sayfa yüklendiğinde toplamları hesapla
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.ogrenci-row').forEach(row => {
+        toplamHesapla(row);
+    });
+});
+
+// Tüm verileri kaydet
+function kaydetTumVeriler() {
+    const rows = document.querySelectorAll('.ogrenci-row');
+    let saveCount = 0;
+    let totalRows = rows.length;
+    
+    if (totalRows === 0) return;
+    
+    const tarih = document.querySelector('input[name="tarih"]').value;
+    const veri_turu = document.querySelector('select[name="veri_turu"]').value;
+    
+    rows.forEach(row => {
+        const ogrenciId = row.dataset.ogrenciId;
+        const inputs = row.querySelectorAll('.perf-input');
+        
+        const data = {
+            ogrenci_id: ogrenciId,
+            tarih: tarih,
+            veri_turu: veri_turu
+        };
+        
+        inputs.forEach(input => {
+            data[input.name] = parseInt(input.value) || 0;
+        });
+        
+        // AJAX ile kaydet
+        fetch('{{ url_for("dersler.performans_kaydet") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            saveCount++;
+            if (saveCount === totalRows) {
+                alert('Tüm veriler başarıyla kaydedildi!');
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Kayıt hatası:', error);
+            alert('Kayıt sırasında bir hata oluştu!');
+        });
+    });
+}
+
+// Excel export
+function exportToExcel() {
+    const table = document.querySelector('.performans-table');
+    const wb = XLSX.utils.table_to_book(table, {sheet: "Performanslar"});
+    const tarih = document.querySelector('input[name="tarih"]').value;
+    XLSX.writeFile(wb, `ogrenci_performanslari_${tarih}.xlsx`);
+}
+</script>
+
+<!-- SheetJS Library (Excel export için) -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
 {% endblock %}

@@ -39,7 +39,8 @@ def create_app(config_name=None):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
     # Register blueprints
-    from app.routes import auth, main, ogrenciler, egitmenler, dersler, aidat, siniflar
+    from app.routes import auth, main, ogrenciler, egitmenler, dersler, aidat, siniflar, karneler
+    from app.routes.islemler import toplantilar_bp
     
     app.register_blueprint(auth.bp)
     app.register_blueprint(main.bp)
@@ -48,6 +49,8 @@ def create_app(config_name=None):
     app.register_blueprint(dersler.bp)
     app.register_blueprint(aidat.bp)
     app.register_blueprint(siniflar.bp)
+    app.register_blueprint(karneler.bp)
+    app.register_blueprint(toplantilar_bp)
     
     # Register error handlers
     register_error_handlers(app)
@@ -109,3 +112,24 @@ def register_template_filters(app):
         if not date_obj:
             return ''
         return date_obj.strftime('%d.%m.%Y')
+    
+    @app.template_filter('zip')
+    def zip_filter(*args):
+        """Zip multiple lists together"""
+        return zip(*args)
+    
+    @app.template_filter('gun_adi')
+    def gun_adi_filter(tarih):
+        """Tarihin Türkçe gün adını döndür"""
+        if not tarih:
+            return ''
+        gun_adlari = {
+            0: 'Pazartesi',
+            1: 'Salı',
+            2: 'Çarşamba',
+            3: 'Perşembe',
+            4: 'Cuma',
+            5: 'Cumartesi',
+            6: 'Pazar'
+        }
+        return gun_adlari.get(tarih.weekday(), '')

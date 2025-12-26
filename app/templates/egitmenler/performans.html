@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}Eğitmen Performans Değerlendirme - E-Kuran Kursu Yönetim Sistemi{% endblock %}
+
+{% block extra_css %}
+<style>
+    .performans-table {
+        font-size: 12px;
+    }
+    
+    .performans-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        padding: 10px;
+        text-align: center;
+        vertical-align: middle;
+        border: 1px solid #dee2e6;
+    }
+    
+    .performans-table td {
+        padding: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .performans-table input[type="text"],
+    .performans-table input[type="number"] {
+        width: 100%;
+        padding: 5px;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+    }
+    
+    .hafta-col {
+        width: 80px;
+        text-align: center;
+    }
+    
+    .kriter-col {
+        min-width: 250px;
+    }
+    
+    .btn-ekle {
+        margin-top: 10px;
+    }
+    
+    .delete-row {
+        cursor: pointer;
+        color: #dc3545;
+    }
+    
+    .delete-row:hover {
+        color: #a71d2a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-graph-up-arrow"></i> Eğitmen Performans Değerlendirme</h2>
+                <div>
+                    <button onclick="kaydet()" class="btn btn-success">
+                        <i class="bi bi-save"></i> Kaydet
+                    </button>
+                    <a href="{{ url_for('egitmenler.detay', id=egitmen.id) }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Geri
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bilgi Kartları -->
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Kurs</h6>
+                    <h5 class="card-title">{{ egitmen.kurs.adi }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Eğitmen</h6>
+                    <h5 class="card-title">{{ egitmen.adsoyad }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Yıl</h6>
+                    <select class="form-select" id="yil" onchange="degistir()">
+                        {% for y in range(2020, 2031) %}
+                        <option value="{{ y }}" {% if y == yil %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Ay</h6>
+                    <select class="form-select" id="ay" onchange="degistir()">
+                        <option value="1" {% if ay == 1 %}selected{% endif %}>Ocak</option>
+                        <option value="2" {% if ay == 2 %}selected{% endif %}>Şubat</option>
+                        <option value="3" {% if ay == 3 %}selected{% endif %}>Mart</option>
+                        <option value="4" {% if ay == 4 %}selected{% endif %}>Nisan</option>
+                        <option value="5" {% if ay == 5 %}selected{% endif %}>Mayıs</option>
+                        <option value="6" {% if ay == 6 %}selected{% endif %}>Haziran</option>
+                        <option value="7" {% if ay == 7 %}selected{% endif %}>Temmuz</option>
+                        <option value="8" {% if ay == 8 %}selected{% endif %}>Ağustos</option>
+                        <option value="9" {% if ay == 9 %}selected{% endif %}>Eylül</option>
+                        <option value="10" {% if ay == 10 %}selected{% endif %}>Ekim</option>
+                        <option value="11" {% if ay == 11 %}selected{% endif %}>Kasım</option>
+                        <option value="12" {% if ay == 12 %}selected{% endif %}>Aralık</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performans Tablosu -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered performans-table" id="performansTable">
+                            <thead>
+                                <tr>
+                                    <th class="kriter-col">Değerlendirme Kriteri</th>
+                                    <th class="hafta-col">1. Hafta</th>
+                                    <th class="hafta-col">2. Hafta</th>
+                                    <th class="hafta-col">3. Hafta</th>
+                                    <th class="hafta-col">4. Hafta</th>
+                                    <th style="width: 50px;">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Satırlar buraya eklenecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <button onclick="satirEkle()" class="btn btn-primary btn-ekle">
+                        <i class="bi bi-plus-circle"></i> Yeni Kriter Ekle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let satirSayisi = 0;
+
+// Sayfa yüklendiğinde mevcut verileri yükle veya boş satır ekle
+document.addEventListener('DOMContentLoaded', function() {
+    {% if performanslar %}
+        // Mevcut verileri yükle
+        {% for p in performanslar %}
+        satirEkle('{{ p.kriter }}', {{ p.hafta1 }}, {{ p.hafta2 }}, {{ p.hafta3 }}, {{ p.hafta4 }});
+        {% endfor %}
+    {% else %}
+        // Boş satır ekle
+        satirEkle();
+    {% endif %}
+});
+
+// Yıl/Ay değiştiğinde sayfayı yenile
+function degistir() {
+    const yil = document.getElementById('yil').value;
+    const ay = document.getElementById('ay').value;
+    window.location.href = `{{ url_for('egitmenler.performans', id=egitmen.id) }}?yil=${yil}&ay=${ay}`;
+}
+
+// Yeni satır ekle
+function satirEkle(kriter = '', hafta1 = '', hafta2 = '', hafta3 = '', hafta4 = '') {
+    satirSayisi++;
+    const tbody = document.getElementById('tableBody');
+    const tr = document.createElement('tr');
+    tr.id = `row-${satirSayisi}`;
+    
+    tr.innerHTML = `
+        <td>
+            <input type="text" class="form-control kriter-input" 
+                   placeholder="Değerlendirme kriterini yazın..." 
+                   data-row="${satirSayisi}"
+                   value="${kriter}">
+        </td>
+        <td class="hafta-col">
+            <input type="number" class="form-control puan-input" 
+                   min="0" max="100" 
+                   data-row="${satirSayisi}" 
+                   data-hafta="1"
+                   value="${hafta1}">
+        </td>
+        <td class="hafta-col">
+            <input type="number" class="form-control puan-input" 
+                   min="0" max="100" 
+                   data-row="${satirSayisi}" 
+                   data-hafta="2"
+                   value="${hafta2}">
+        </td>
+        <td class="hafta-col">
+            <input type="number" class="form-control puan-input" 
+                   min="0" max="100" 
+                   data-row="${satirSayisi}" 
+                   data-hafta="3"
+                   value="${hafta3}">
+        </td>
+        <td class="hafta-col">
+            <input type="number" class="form-control puan-input" 
+                   min="0" max="100" 
+                   data-row="${satirSayisi}" 
+                   data-hafta="4"
+                   value="${hafta4}">
+        </td>
+        <td class="text-center">
+            <i class="bi bi-trash delete-row" onclick="satirSil(${satirSayisi})"></i>
+        </td>
+    `;
+    
+    tbody.appendChild(tr);
+}
+
+// Satır sil
+function satirSil(rowId) {
+    const row = document.getElementById(`row-${rowId}`);
+    if (row) {
+        row.remove();
+    }
+}
+
+// Verileri kaydet
+function kaydet() {
+    const rows = document.querySelectorAll('#tableBody tr');
+    const data = [];
+    
+    rows.forEach(row => {
+        const kriter = row.querySelector('.kriter-input').value;
+        const hafta1 = row.querySelector('[data-hafta="1"]').value;
+        const hafta2 = row.querySelector('[data-hafta="2"]').value;
+        const hafta3 = row.querySelector('[data-hafta="3"]').value;
+        const hafta4 = row.querySelector('[data-hafta="4"]').value;
+        
+        if (kriter) {  // Sadece kriter girilmiş satırları kaydet
+            data.push({
+                kriter: kriter,
+                hafta1: parseInt(hafta1) || 0,
+                hafta2: parseInt(hafta2) || 0,
+                hafta3: parseInt(hafta3) || 0,
+                hafta4: parseInt(hafta4) || 0
+            });
+        }
+    });
+    
+    if (data.length === 0) {
+        alert('Lütfen en az bir değerlendirme kriteri girin!');
+        return;
+    }
+    
+    const yil = document.getElementById('yil').value;
+    const ay = document.getElementById('ay').value;
+    
+    // AJAX ile kaydet
+    fetch('{{ url_for("egitmenler.performans_kaydet", id=egitmen.id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            yil: yil,
+            ay: ay,
+            kriterler: data
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('Performans değerlendirmesi başarıyla kaydedildi!');
+        } else {
+            alert('Hata: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('Kayıt hatası:', error);
+        alert('Kayıt sırasında bir hata oluştu!');
+    });
+}
+</script>
+
+{% endblock %}

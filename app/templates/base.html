@@ -77,7 +77,7 @@
 
                             <li><a class="dropdown-item text-white" href="{{ url_for('siniflar.liste') }}"><i
                                         class="bi bi-people-fill me-2"></i>Sınıflar</a></li>
-                            <li><a class="dropdown-item text-white" href="#"><i
+                            <li><a class="dropdown-item text-white" href="{{ url_for('karneler.liste') }}"><i
                                         class="bi bi-card-checklist me-2"></i>Karne Tanımları</a></li>
 
                         </ul>
@@ -128,14 +128,14 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item text-white" href="#">
+                                <a class="dropdown-item text-white" href="{{ url_for('egitmenler.performans_liste') }}">
                                     <i class="bi bi-graph-up-arrow me-2"></i>
                                     Eğitmen Performansları
                                 </a>
                             </li>
 
                             <li>
-                                <a class="dropdown-item text-white" href="#">
+                                <a class="dropdown-item text-white" href="{{ url_for('toplantilar.liste') }}">
                                     <i class="bi bi-calendar-event me-2"></i>
                                     Toplantılar
                                 </a>
@@ -276,20 +276,26 @@
                         <i class="bi bi-calendar-check fs-4 text-white-50" style="cursor: pointer;"></i>
                     </a>
 
-                    <!-- Ayarlar -->
-                    <a href="#" class="text-decoration-none" title="Ayarlar">
+
+                    <!-- Ayarlar (Profil Sayfası) -->
+                    <a href="{{ url_for('main.profil') }}" class="text-decoration-none" title="Ayarlar">
                         <i class="bi bi-gear fs-4 text-white-50" style="cursor: pointer;"></i>
                     </a>
 
                     <!-- Ayırıcı ( | ) -->
                     <div class="text-white-50 fs-4">|</div>
 
-                    <!-- Kullanıcı Profil Görseli -->
-                    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" width="35" height="35"
-                        class="rounded-circle">
 
-                    <!-- Kullanıcı İsmi -->
-                    <span class="text-white fw-semibold" style="cursor: pointer;">ismail</span>
+                    <!-- Kullanıcı Profil Dropdown -->
+                    <div class="dropdown d-inline-block">
+                        <a class="text-white fw-semibold text-decoration-none dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" width="35" height="35" class="rounded-circle me-1">
+                            {{ current_user.adsoyad if current_user.is_authenticated else '' }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Çıkış Yap</a></li>
+                        </ul>
+                    </div>
 
                 </div>
                         

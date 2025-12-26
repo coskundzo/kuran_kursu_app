@@ -50,7 +50,8 @@ def liste():
 def ekle():
     from app.forms import DersForm
     from app.models.egitmen import Egitmen
-    from app.models.kurs import Kurs, Sinif
+    from app.models.kurs import Kurs
+    from app.models.sinif import Sinif
     
     form = DersForm()
     
@@ -104,7 +105,8 @@ def duzenle(id):
     """Ders düzenle"""
     from app.forms import DersForm
     from app.models.egitmen import Egitmen
-    from app.models.kurs import Kurs, Sinif
+    from app.models.kurs import Kurs
+    from app.models.sinif import Sinif
     
     ders = Ders.query.get_or_404(id)
     form = DersForm(obj=ders)
@@ -413,27 +415,153 @@ def yuzune_oncesi_liste():
 @bp.route('/performans')
 @login_required
 def performans_liste():
-    """Öğrenci performansları listesi"""
-    page = request.args.get('page', 1, type=int)
-    per_page = 20
-
-    # Öğrenci bazlı ders performanslarını al
+    """Öğrenci performansları giriş sayfası"""
     from app.models.ogrenci import Ogrenci
+    from app.models.kurs import Kurs
+    from app.models.sinif import Sinif
+    from app.models.performans import OgrenciPerformans
+    from datetime import date
     
-    query = Ogrenci.query.filter_by(aktif=True)
-
-    # Arama
-    search = request.args.get('search', '')
-    if search:
-        query = query.filter(Ogrenci.adsoyad.like(f'%{search}%'))
-
-    # Sıralama
-    query = query.order_by(Ogrenci.adsoyad)
-
-    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-    ogrenciler = pagination.items
-
+    # Filtreleme parametreleri
+    veri_turu = request.args.get('veri_turu', 'gunluk')
+    kurs_id = request.args.get('kurs_id', type=int)
+    sinif_id = request.args.get('sinif_id', type=int)
+    tarih_str = request.args.get('tarih', date.today().strftime('%Y-%m-%d'))
+    
+    try:
+        tarih = datetime.strptime(tarih_str, '%Y-%m-%d').date()
+    except:
+        tarih = date.today()
+    
+    # Kurs ve sınıf listelerini hazırla
+    if current_user.tur == 3:  # Kurs kullanıcısı
+        kurslar = Kurs.query.filter_by(id=current_user.kaynak_id).all()
+        kurs_id = current_user.kaynak_id
+        siniflar = Sinif.query.filter_by(kurs_id=kurs_id).all()
+    else:  # Admin
+        kurslar = Kurs.query.filter_by(aktif=True).all()
+        if kurs_id:
+            siniflar = Sinif.query.filter_by(kurs_id=kurs_id).all()
+        else:
+            siniflar = Sinif.query.all()
+    
+    # Öğrencileri getir
+    query = Ogrenci.query.filter_by(durum='aktif')
+    
+    if kurs_id:
+        query = query.filter_by(kurs_id=kurs_id)
+    if sinif_id:
+        query = query.filter_by(sinif_id=sinif_id)
+    
+    ogrenciler = query.order_by(Ogrenci.adsoyad).all()
+    
+    # Her öğrenci için o gün/hafta performans verilerini al veya boş oluştur
+    performans_data = {}
+    for ogrenci in ogrenciler:
+        perf = OgrenciPerformans.query.filter_by(
+            ogrenci_id=ogrenci.id,
+            tarih=tarih,
+            veri_turu=veri_turu
+        ).first()
+        
+        if not perf:
+            # Eğer veri yoksa yeni bir kayıt oluştur (henüz kaydetme)
+            perf = OgrenciPerformans(
+                ogrenci_id=ogrenci.id,
+                kurs_id=ogrenci.kurs_id,
+                sinif_id=ogrenci.sinif_id,
+                tarih=tarih,
+                veri_turu=veri_turu
+            )
+        
+        performans_data[ogrenci.id] = perf
+    
     return render_template('dersler/performans.html',
                            ogrenciler=ogrenciler,
-                           pagination=pagination,
-                           search=search)
+                           performans_data=performans_data,
+                           kurslar=kurslar,
+                           siniflar=siniflar,
+                           veri_turu=veri_turu,
+                           kurs_id=kurs_id,
+                           sinif_id=sinif_id,
+                           tarih=tarih)
+
+
+@bp.route('/performans/kaydet', methods=['POST'])
+@login_required
+def performans_kaydet():
+    """Öğrenci performans verilerini kaydet"""
+    from app.models.performans import OgrenciPerformans
+    from datetime import date
+    
+    try:
+        data = request.get_json()
+        ogrenci_id = data.get('ogrenci_id')
+        tarih_str = data.get('tarih')
+        veri_turu = data.get('veri_turu', 'gunluk')
+        
+        # Tarih parse et
+        try:
+            tarih = datetime.strptime(tarih_str, '%Y-%m-%d').date()
+        except:
+            tarih = date.today()
+        
+        # Var olan kaydı bul veya yeni oluştur
+        performans = OgrenciPerformans.query.filter_by(
+            ogrenci_id=ogrenci_id,
+            tarih=tarih,
+            veri_turu=veri_turu
+        ).first()
+        
+        from app.models.ogrenci import Ogrenci
+        ogrenci = Ogrenci.query.get(ogrenci_id)
+        
+        if not performans:
+            performans = OgrenciPerformans(
+                ogrenci_id=ogrenci_id,
+                kurs_id=ogrenci.kurs_id,
+                sinif_id=ogrenci.sinif_id,
+                tarih=tarih,
+                veri_turu=veri_turu
+            )
+            db.session.add(performans)
+        
+        # Puanları güncelle
+        performans.ders_calisma_disiplini = data.get('ders_calisma_disiplini', 0)
+        performans.ders_verme_performansi = data.get('ders_verme_performansi', 0)
+        performans.sistem_uygulanma_disiplini = data.get('sistem_uygulanma_disiplini', 0)
+        performans.ders_okuyus_hizi = data.get('ders_okuyus_hizi', 0)
+        performans.talim_tecvid_durumu = data.get('talim_tecvid_durumu', 0)
+        performans.ders_verme_zamanlamasi = data.get('ders_verme_zamanlamasi', 0)
+        performans.sayfa_dinleme_disiplini = data.get('sayfa_dinleme_disiplini', 0)
+        performans.kuran_kulturune_uyum = data.get('kuran_kulturune_uyum', 0)
+        performans.hafta_basinda_kurs_zamanlamasi_giris = data.get('hafta_basinda_kurs_zamanlamasi_giris', 0)
+        performans.ders_saatlerinde_sinifa_zamanlama_giris_mutabaa_saatleri = data.get('ders_saatlerinde_sinifa_zamanlama_giris_mutabaa_saatleri', 0)
+        
+        performans.kultur_saatlari_ders_zamanlama_giris = data.get('kultur_saatlari_ders_zamanlama_giris', 0)
+        performans.sinif_hoca_ile_iletisim = data.get('sinif_hoca_ile_iletisim', 0)
+        performans.arkadaslariyla_iletisim = data.get('arkadaslariyla_iletisim', 0)
+        performans.namaz_vakitlerinde_mescide_zamanlama_giris = data.get('namaz_vakitlerinde_mescide_zamanlama_giris', 0)
+        performans.ibadet_disiplini = data.get('ibadet_disiplini', 0)
+        performans.kilkiyafet_disiplini = data.get('kilkiyafet_disiplini', 0)
+        performans.yeme_icme_disiplini = data.get('yeme_icme_disiplini', 0)
+        performans.yatalakhane_disiplini = data.get('yatalakhane_disiplini', 0)
+        performans.trafic_kontrolu_kendini_cikisine_becerisi_temizlik_ve_duzen = data.get('trafic_kontrolu_kendini_cikisine_becerisi_temizlik_ve_duzen', 0)
+        performans.genel_disiplin = data.get('genel_disiplin', 0)
+        
+        performans.notlar = data.get('notlar', '')
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Performans verileri kaydedildi',
+            'toplam_puan': performans.toplam_puan()
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 400
